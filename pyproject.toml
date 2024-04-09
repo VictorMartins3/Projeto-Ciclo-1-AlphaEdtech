@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "ocr-project"
+version = "0.1.0"
+description = "Desafio: GED (Gerenciamento Eletrônico de Documentos) com OCR - Turma Hard Boole.py – Ciclo 1!"
+authors = ["Cleverson Guandalin <cleversongnd@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
