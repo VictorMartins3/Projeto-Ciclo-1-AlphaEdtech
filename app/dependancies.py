@@ -42,6 +42,26 @@ def insert_user(email, username, password):
         st.balloons()
     except (Exception, psycopg2.DatabaseError) as error:
         st.error(f"Erro ao inserir usuário: {error}")
+        
+def insert_user_dados(nome, doc_identidade, org_emissor, uf, cpf, data_nascimento):
+    try:
+        cursor = conn.cursor()
+        
+        insert_query = """
+            INSERT INTO users_dados (nome, doc_identidade, org_emissor, uf, cpf, data_nascimento)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """
+        cursor = conn.cursor()
+        cursor.execute(insert_query, (nome, doc_identidade, org_emissor, uf, cpf, data_nascimento))
+
+        conn.commit()
+        
+        cursor.close()
+
+        st.success('Dados inseridos com ssucesso!')
+        st.balloons()
+    except (Exception, psycopg2.DatabaseError) as error:
+        st.error(f"Erro ao inserir usuário: {error}")
 
 def fetch_users():
     try:
@@ -137,6 +157,43 @@ def sign_up():
                         st.warning('Email já cadastrado')
                 else:
                     st.warning('Email inválido')
+
+def input_dados():                   
+    with st.form(key='dados', clear_on_submit=True):
+        nome_value = "Luanzeira bananeira"
+        cpf_value = "4002-8922"
+        st.subheader(':green[Dados]]')
+        nome = st.text_input(':blue[Nome]', placeholder='Digite seu Nome Completo', value=nome_value)
+        doc_identidade = st.text_input(':blue[Identidade]', placeholder='Digite seu documento da identidade')
+        org_emissor = st.text_input(':blue[Órgão Emissor]', placeholder='Digite o órgão emissor')
+        uf =  st.text_input(':blue[UF]', placeholder='Digite a UF')
+        cpf = st.text_input(':blue[CPF]', placeholder='Digite seu CPF', value=cpf_value)
+        min_date = datetime.date(1920, 1, 1)
+        data_nascimento = st.date_input('Data de nascimento', value=None, min_value=min_date)
+        enviar_dados = st.form_submit_button('Enviar')
+        
+        if enviar_dados:
+            if nome:
+                if doc_identidade:
+                    if org_emissor:
+                        if uf and len(uf) ==2:
+                            if cpf:
+                                if data_nascimento:
+                                    insert_user_dados(nome, doc_identidade, org_emissor, uf, cpf, data_nascimento)
+                                else:
+                                    st.warning('Insira a data de nascimento')
+                            else:
+                                st.warning('Insira o CPF')
+                        else:
+                            st.warning('A UF deve ter dois dígitos.')
+                    else:
+                        st.warning('Insira o Órgão emissor')
+                else:
+                    st.warning('Insira a identidade')
+            else:
+                st.warning('Insira o nome')
+                            
+            
 
 # Executa a página de cadastro
 # sign_up()
