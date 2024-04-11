@@ -1,38 +1,62 @@
 import streamlit as st
 from PIL import Image
+import streamlit as st
+import streamlit_authenticator as stauth
+from dependancies import sign_up
+from dependancies import fetch_users
+from PIL import Image
+import os
+from Pages.Cliente.Upload import UploadFoto
+from Pages.Cliente.Carteira import MostraCarteira
+from Pages.Cliente.Inicio import InicioCliente
+
+st.set_page_config(page_title='Login', page_icon='🐍', initial_sidebar_state='expanded')
+
+alterna = st.toggle('Cadastro')
+if alterna:
+    sign_up()
+else:
+    try:
+        users = fetch_users()
+        emails = []
+        usernames = []
+        passwords = []
+
+        for user in users:
+            emails.append(user['key'])
+            usernames.append(user['username'])
+            passwords.append(user['password'])
+        credentials = {'usernames': {}}
+        for index in range(len(emails)):
+            credentials['usernames'][usernames[index]] = {'name': emails[index], 'password': passwords[index]}
+        Authenticator = stauth.Authenticate(credentials, cookie_name='Streamlit', key='abcdef', cookie_expiry_days=4)
+        email, authentication_status, username = Authenticator.login(':green[Login]', 'main')
+        
+        info, info1 = st.columns(2)
+
+        if username:
+            if username in usernames:
+                if authentication_status:
+                    st.sidebar.subheader(f'Bem vindo {username}')
+                    with st.sidebar:
+                        pagina_selecionada = st.selectbox("Selecione uma página", ["Início", "Upload de arquivos", "Minha carteira"])
+                    Authenticator.logout('Sair', 'sidebar')
+                    if pagina_selecionada == "Início":
+                        InicioCliente()
+                    elif pagina_selecionada == "Upload de arquivos":
+                        UploadFoto()
+                    elif pagina_selecionada == "Minha carteira":
+                        MostraCarteira()
+                elif not authentication_status:
+                    with info:
+                        st.error('Senha ou usuário incorreto.')
+                else:
+                    with info:
+                        st.warning('Por favor, digite suas informações')
+            else:
+                with info:
+                    st.warning('Usuário não existe, por favor, cadastre-se')
 
 
-
-st.set_page_config(page_title='Página Inicial', page_icon='🐍', initial_sidebar_state='collapsed')
-
-st.subheader("Cadastramento de CNH e RG online")
-
-st.write('''OCR, ou Reconhecimento Óptico de Caracteres, é uma tecnologia
-         revolucionária que transforma letras e números de uma imagem,
-         como uma foto de um documento, em texto editável.
-         Imagine tirar uma foto de um documento de CNH e, em seguida,
-         poder extrair esse texto para um cadastro no seu computador
-         como se fosse digitado. Isso é OCR! Ele facilita a extração
-         de informações de documentos, tornando o processo de cadastro
-         mais rápido e menos propenso a erros. ''')
-
-image = Image.open(r'C:\Users\luanh_g9x\OneDrive\Documents\ocr\projeto_final\app\imagens\exemplo.png')
-new_size = (700, 500)
-image = image.resize(new_size)
-st.image(image, caption='Imagem sobre ocr.')
-
-st.write('''Além da tecnologia da leitura com o OCR, nosso site disponibiza
-         o gerenciamento eficiente dessas imagens e os textos, para você
-         poder usar sempre que precisar, reunindo todos os seus documentos
-         em um só lugar de forma prática. Com a nossa carteira digital,
-         lidar com documentos nunca foi tão fácil!''')
-
-st.write(" ")
-st.write(" ")
-st.write(" ")
-
-col1, col2, col3 = st.columns(3)
-col1.subheader('Cadastre-se')
-col1.link_button('Cadastro', "Cadastro")
-col3.subheader(' Faça Login')
-col3.link_button('Login', "Login")
+    except:
+        st.success('Atualize a página')
