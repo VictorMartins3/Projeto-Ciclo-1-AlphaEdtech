@@ -9,7 +9,7 @@ def connect_to_postgresql():
         conn = psycopg2.connect(
             dbname="projeto_test",
             user="postgres",
-            password="1234",
+            password="%Jbkhawbkahgd1",
             host="localhost"
         )
         return conn
