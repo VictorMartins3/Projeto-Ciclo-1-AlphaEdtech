@@ -25,7 +25,9 @@ try:
     credentials = {'usernames': {}}
     for index in range(len(emails)):
         credentials['usernames'][usernames[index]] = {'name': emails[index], 'password': passwords[index]}
+
     Authenticator = stauth.Authenticate(credentials, cookie_name='Streamlit', key='abcdef', cookie_expiry_days=4)
+
     email, authentication_status, username = Authenticator.login(':green[Login]', 'main')
     
     info, info1 = st.columns(2)
@@ -33,7 +35,8 @@ try:
         alterna = st.toggle('Cadastro')
         if alterna:
             sign_up()
-            
+
+
     if username:
         if username in usernames:
             if authentication_status:
@@ -45,6 +48,7 @@ try:
                     InicioCliente()
                 elif pagina_selecionada == "Upload de arquivos":
                     Upload()
+
                 elif pagina_selecionada == "Minha carteira":
                     MostraCarteira()
             elif not authentication_status:
@@ -56,6 +60,7 @@ try:
         else:
             with info:
                 st.warning('Usuário ou senha não correspondem.')
+
 
 
 except:
