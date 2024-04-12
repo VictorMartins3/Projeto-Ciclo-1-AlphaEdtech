@@ -1,8 +1,9 @@
 ﻿import streamlit as st
 import os
 from PIL import Image
+from dependancies import input_dados
 
-def UploadFoto():
+def Upload():
     st.subheader("Upload de arquivos")
     st.write('''Faça agora o upload do seu documento. Se atente as instruções
             para ter a melhor experiência possível. ''')
@@ -29,16 +30,19 @@ def UploadFoto():
             st.success('Arquivo enviado.')
             with open(full_path, "wb") as f:
                 f.write(bytes_data)
+    
+
+    st.write(" ")
+            
+    st.write("Confira seus dados, e caso encontre algum erro por favor corrija antes de enviar.")
+            
+    st.write(" ")
+            
+    input_dados()
+    
+    
                 
-    with st.form(key="include_cliente_informacoes"):
-        input_name = st.text_input(label="Insira seu nome")
-        input_idade = st.number_input(label="Insira sua idade", format="%d", step=1)
-        input_email = st.text_input(label="Insira seu email")
-        input_button_submit = st.form_submit_button("Enviar")
-        if input_button_submit and input_button_submit is not None:
-            bytes_data = file.read()
-            image_path = r'C:\Users\luanh_g9x\OneDrive\Documents\ocr\projeto_final\app\imagens\imagens_usuario'
-            full_path = os.path.join(image_path, file.name)
-            st.success('Arquivo enviado.')
-            with open(full_path, "wb") as f:
-                f.write(bytes_data)
+        
+                
+
+
