@@ -1,11 +1,11 @@
-
 BEGIN;
 
 
 CREATE TABLE IF NOT EXISTS public."Documento"
 (
     id_doc serial NOT NULL,
-    tipo character varying NOT NULL,
+    tipo character varying(50) NOT NULL,
+    usuario_id integer NOT NULL,
     CONSTRAINT id_doc_pk PRIMARY KEY (id_doc)
 );
 
@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS public."Login_table"
     email character varying(255) NOT NULL,
     nome_usuario character varying(100) NOT NULL,
     senha character varying(255) NOT NULL,
+    usuario_id integer,
     CONSTRAINT id_login_pk PRIMARY KEY (id_login)
 );
 
@@ -22,12 +23,10 @@ CREATE TABLE IF NOT EXISTS public."Perfil_Usuario"
 (
     id_perfil serial NOT NULL,
     nome character varying(255) NOT NULL,
-    telefone integer NOT NULL,
+    telefone bigint NOT NULL,
     endereco text NOT NULL,
     sexo boolean,
     data_criacao_conta timestamp with time zone NOT NULL,
-    login_id integer NOT NULL,
-    docs_id integer,
     CONSTRAINT id_perfil_pk PRIMARY KEY (id_perfil)
 );
 
@@ -42,24 +41,25 @@ CREATE TABLE IF NOT EXISTS public."RG"
     nome character varying(255) NOT NULL,
     filiacao_pai character varying(255),
     filiacao_mae character varying(255),
-    cpf integer,
+    cpf character varying(20),
     origem_doc character varying(255) NOT NULL,
     naturalidade character varying(50) NOT NULL,
     data_nasc date NOT NULL,
     rh boolean,
     observacao text,
-    dni integer,
-    titulo_eleitor integer,
+    dni bigint,
+    titulo_eleitor bigint,
     zona_eleitoral integer,
     secao_eleitoral integer,
-    nis_pis_pasep integer,
-    cert_militar integer,
-    cnh integer,
-    cns integer,
+    nis_pis_pasep bigint,
+    cert_militar bigint,
+    cnh bigint,
+    cns bigint,
     id_profissional character varying(255),
     ctps integer,
     serie_ctps integer,
     uf_ctps character varying(2),
+    validade date,
     CONSTRAINT doc_id_pk_rg PRIMARY KEY (doc_id)
 );
 
@@ -74,11 +74,11 @@ CREATE TABLE IF NOT EXISTS public."CNH"
     rg character varying(50) NOT NULL,
     orgao_emissor_rg character varying(255) NOT NULL,
     uf_rg character varying(2) NOT NULL,
-    cpf integer NOT NULL,
+    cpf character varying(20) NOT NULL,
     data_nasc date NOT NULL,
     filiacao_pai character varying(255),
     filiacao_mae character varying(255),
-    registro integer NOT NULL,
+    registro bigint NOT NULL,
     validade date NOT NULL,
     primeira_hab date NOT NULL,
     cat character varying(10) NOT NULL,
@@ -90,17 +90,17 @@ CREATE TABLE IF NOT EXISTS public."CNH"
     CONSTRAINT doc_id_pk_cnh PRIMARY KEY (doc_id)
 );
 
-ALTER TABLE IF EXISTS public."Perfil_Usuario"
-    ADD CONSTRAINT login_id_fk FOREIGN KEY (login_id)
-    REFERENCES public."Login_table" (id_login) MATCH SIMPLE
+ALTER TABLE IF EXISTS public."Documento"
+    ADD CONSTRAINT usuario_id_fk FOREIGN KEY (usuario_id)
+    REFERENCES public."Perfil_Usuario" (id_perfil) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public."Perfil_Usuario"
-    ADD CONSTRAINT docs_id_fk FOREIGN KEY (docs_id)
-    REFERENCES public."Documento" (id_doc) MATCH SIMPLE
+ALTER TABLE IF EXISTS public."Login_table"
+    ADD CONSTRAINT usuario_id_fk FOREIGN KEY (usuario_id)
+    REFERENCES public."Perfil_Usuario" (id_perfil) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
