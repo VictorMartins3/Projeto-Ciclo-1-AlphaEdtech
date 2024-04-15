@@ -12,6 +12,7 @@ psycopg2 = "^2.9.9"
 bcrypt = "^4.1.2"
 streamlit-authenticator = "0.2.2"
 deta = "^1.2.0"
+python-dotenv = "^1.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
