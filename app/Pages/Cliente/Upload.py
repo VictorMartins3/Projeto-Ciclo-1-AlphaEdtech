@@ -24,9 +24,7 @@ def Upload():
     st.write("""1. Garanta que a foto tenha uma boa qualidade.""")
     st.write("""2. De preferência em um fundo preto.""")
     st.write("""3. Centralize a imagem.""")
-    st.write(
-        """4. Após a imagem ser processada confirme as informações antes de submeter."""
-    )
+    st.write("""4. Após a imagem ser processada confirme as informações antes de submeter.""")
 
     image_tutorial = Image.open(r"app/imagens/tutorial.png")
     new_size = (700, 500)
@@ -34,8 +32,10 @@ def Upload():
     st.image(image, caption="Exemplo de foto adequada")
 
     with st.form(key="include_cliente_foto"):
-        input_tipo_documento = st.selectbox("Selecione o documento", ["CNH"])
-        uploaded_file = st.file_uploader("Imagem", type=["jpg", "png"])
+
+        input_tipo_documento = st.selectbox("Selecione o documento", ["CNH", "RG"])
+        file = st.file_uploader("Imagem", type=["jpg", "png"])
+
         input_button_submit = st.form_submit_button("Enviar")
 
         if input_button_submit:
