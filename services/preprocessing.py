@@ -76,6 +76,7 @@ def align_images(img):
     four_points_orig = four_points * multiplier
     four_points_orig = four_points_orig.astype(int)
     warped = four_point_transform(img, four_points_orig)
+    warped = imutils.resize(warped, width=1100).copy()
     return warped
 
 
