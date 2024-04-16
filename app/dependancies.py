@@ -9,7 +9,7 @@ def connect_to_postgresql():
         conn = psycopg2.connect(
             dbname="projeto_test",
             user="postgres",
-            password="%Jbkhawbkahgd1",
+            password="1234",
             host="localhost"
         )
         return conn
@@ -58,7 +58,7 @@ def insert_user_dados(nome, doc_identidade, org_emissor, uf, cpf, data_nasciment
         
         cursor.close()
 
-        st.success('Dados inseridos com ssucesso!')
+        st.success('Dados inseridos com sucesso!')
         st.balloons()
     except (Exception, psycopg2.DatabaseError) as error:
         st.error(f"Erro ao inserir usuário: {error}")
@@ -125,13 +125,44 @@ def hash_password(password):
     hashed_password = bcrypt.hashpw(password.encode(), salt)
     return hashed_password
 
+def validate_name(nome):
+    if 10 < len(nome) < 100:
+        # Verifica se todos os caracteres são letras, espaços ou acentuações
+        if all(char.isalpha() or char.isspace() for char in nome):
+            return True
+    return False
+
+def validate_cpf(cpf: str) -> bool:
+    # Verifica a formatação do CPF
+    if not re.match(r'\d{3}\.\d{3}\.\d{3}-\d{2}', cpf):
+        return False
+
+    # Obtém apenas os números do CPF, ignorando pontuações
+    numbers = [int(digit) for digit in cpf if digit.isdigit()]
+
+    # Verifica se o CPF possui 11 números ou se todos são iguais
+    if len(numbers) != 11 or len(set(numbers)) == 1:
+        return False
+
+    # Validação dos dígitos verificadores
+    sum_of_products = sum(a * b for a, b in zip(numbers[0:9], range(10, 1, -1)))
+    expected_digit = (sum_of_products * 10 % 11) % 10
+    if numbers[9] != expected_digit:
+        return False
+
+    sum_of_products = sum(a * b for a, b in zip(numbers[0:10], range(11, 1, -1)))
+    expected_digit = (sum_of_products * 10 % 11) % 10
+    if numbers[10] != expected_digit:
+        return False    
+    return True
+
 def sign_up():
     with st.form(key='signup', clear_on_submit=True):
         st.subheader(':green[Cadastrar]')
-        email = st.text_input(':blue[Email]', placeholder='Digite seu Email')
-        username = st.text_input(':blue[Usuário]', placeholder='Digite seu Nome de Usuário')
-        password1 = st.text_input(':blue[Senha]', placeholder='Digite sua Senha', type='password')
-        password2 = st.text_input(':blue[Confirmar Senha]', placeholder='Confirme sua Senha', type='password')
+        email = st.text_input(':green[Email]', placeholder='Digite seu Email')
+        username = st.text_input(':green[Usuário]', placeholder='Digite seu Nome de Usuário')
+        password1 = st.text_input(':green[Senha]', placeholder='Digite sua Senha', type='password')
+        password2 = st.text_input(':green[Confirmar Senha]', placeholder='Confirme sua Senha', type='password')
 
         if st.form_submit_button('Cadastrar'):
             if email:
@@ -160,24 +191,25 @@ def sign_up():
 
 def input_dados():                   
     with st.form(key='dados', clear_on_submit=True):
-        nome_value = "Luanzeira bananeira"
+        nome_value = "Luan Oliveira"
         cpf_value = "4002-8922"
-        st.subheader(':green[Dados]]')
-        nome = st.text_input(':blue[Nome]', placeholder='Digite seu Nome Completo', value=nome_value)
-        doc_identidade = st.text_input(':blue[Identidade]', placeholder='Digite seu documento da identidade')
-        org_emissor = st.text_input(':blue[Órgão Emissor]', placeholder='Digite o órgão emissor')
-        uf =  st.text_input(':blue[UF]', placeholder='Digite a UF')
-        cpf = st.text_input(':blue[CPF]', placeholder='Digite seu CPF', value=cpf_value)
+        st.subheader(':green[Dados]')
+        nome = st.text_input(':green[Nome]', placeholder='Digite seu Nome Completo', value=nome_value)
+        doc_identidade = st.text_input(':green[Identidade]', placeholder='Digite seu documento da identidade')
+        org_emissor = st.text_input(':green[Órgão Emissor]', placeholder='Digite o órgão emissor', help="Exemplo: SSP")
+        uf =  st.text_input(':green[UF]', placeholder='Digite a UF', help="Siglas do estado em que a carteira de identidade foi emitida.")
+        cpf = st.text_input(':green[CPF]', placeholder='Digite seu CPF', value=cpf_value, help="Exemplo: 123.456.789-10")
         min_date = datetime.date(1920, 1, 1)
-        data_nascimento = st.date_input('Data de nascimento', value=None, min_value=min_date)
+        max_date = datetime.date(2007, 1, 1)
+        data_nascimento = st.date_input(':green[Data de nascimento]', value=None, min_value=min_date, max_value=max_date)
         enviar_dados = st.form_submit_button('Enviar')
         
         if enviar_dados:
-            if nome:
-                if doc_identidade:
+            if nome and validate_name(nome):
+                if doc_identidade and len(doc_identidade) > 5:
                     if org_emissor:
-                        if uf and len(uf) ==2:
-                            if cpf:
+                        if uf and len(uf)==2:
+                            if cpf and validate_cpf(cpf):
                                 if data_nascimento:
                                     insert_user_dados(nome, doc_identidade, org_emissor, uf, cpf, data_nascimento)
                                 else:
@@ -189,9 +221,9 @@ def input_dados():
                     else:
                         st.warning('Insira o Órgão emissor')
                 else:
-                    st.warning('Insira a identidade')
+                    st.warning('Insira uma identidade válida')
             else:
-                st.warning('Insira o nome')
+                st.warning('Insira um nome válido')
                             
             
 
