@@ -8,11 +8,10 @@ from Pages.Cliente.Carteira import MostraCarteira
 from Pages.Cliente.Inicio import InicioCliente
 from Pages.Adm.Administrador import InicioAdministrador
 
-st.set_page_config(page_title='App', page_icon='🐍', initial_sidebar_state='expanded')
+st.set_page_config(page_title="App", page_icon="🐍", initial_sidebar_state="expanded")
 
 with open(r"app\style.css") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html = True)
-    
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 ms = st.session_state
 if "themes" not in ms:
@@ -56,17 +55,28 @@ def ChangeTheme():
         ms.themes["current_theme"] = "dark"
 
 
-btn_face = (
-    ms.themes["light"]["button_face"]
-    if ms.themes["current_theme"] == "light"
-    else ms.themes["dark"]["button_face"]
-)
-st.button(btn_face, on_click=ChangeTheme, key="change_tema")
+# Verifica o estado atual do tema para definir o valor inicial do toggle
+current_theme_status = ms.themes["current_theme"] == "dark"
 
+# Toggle para mudança de tema
+theme_toggle = st.toggle("Alterar ☀", value=current_theme_status, on_change=ChangeTheme)
 
-if ms.themes["refreshed"] == False:
+# Checa se o estado do toggle corresponde ao tema atual e se não, troca
+if theme_toggle != current_theme_status:
+    ChangeTheme()
+
+# Armazene o estado da página no Session State
+if "page" not in st.session_state:
+    st.session_state.page = "home"
+
+# Defina a página com base no estado armazenado
+page = st.session_state.page
+
+# Agora, quando você muda o tema, a página não será recarregada para o estado inicial
+if not ms.themes["refreshed"]:
     ms.themes["refreshed"] = True
-    st.rerun()
+    # Não chame st.rerun() aqui
+
 
 try:
     users = fetch_users()
@@ -75,36 +85,45 @@ try:
     passwords = []
 
     for user in users:
-        emails.append(user['key'])
-        usernames.append(user['username'])
-        passwords.append(user['password'])
-    credentials = {'usernames': {}}
+        emails.append(user["key"])
+        usernames.append(user["username"])
+        passwords.append(user["password"])
+    credentials = {"usernames": {}}
     for index in range(len(emails)):
-        credentials['usernames'][usernames[index]] = {'name': emails[index], 'password': passwords[index]}
+        credentials["usernames"][usernames[index]] = {
+            "name": emails[index],
+            "password": passwords[index],
+        }
 
-    Authenticator = stauth.Authenticate(credentials, cookie_name='App', key='abcdef', cookie_expiry_days=4)
+    Authenticator = stauth.Authenticate(
+        credentials, cookie_name="App", key="abcdef", cookie_expiry_days=4
+    )
 
-    email, authentication_status, username = Authenticator.login(':green[Login]', 'main')
-    
+    email, authentication_status, username = Authenticator.login(
+        ":green[Login]", "main"
+    )
+
     info, info1 = st.columns(2)
     if not authentication_status:
-        alterna = st.toggle('Cadastro')
+        alterna = st.toggle("Cadastro")
         if alterna:
             sign_up()
-
 
     if username:
         if username in usernames:
             if authentication_status:
                 if username == "admin":
-                    st.sidebar.subheader('Modo administrador')
-                    Authenticator.logout('Sair', 'sidebar')
-                    InicioAdministrador()                   
+                    st.sidebar.subheader("Modo administrador")
+                    Authenticator.logout("Sair", "sidebar")
+                    InicioAdministrador()
                 else:
-                    st.sidebar.subheader(f'Bem vindo {username}')
+                    st.sidebar.subheader(f"Bem vindo {username}")
                     with st.sidebar:
-                        pagina_selecionada = st.selectbox("Selecione uma página", ["Início", "Upload de arquivos", "Minha carteira"])
-                    Authenticator.logout('Sair', 'sidebar')
+                        pagina_selecionada = st.selectbox(
+                            "Selecione uma página",
+                            ["Início", "Upload de arquivos", "Minha carteira"],
+                        )
+                    Authenticator.logout("Sair", "sidebar")
                     if pagina_selecionada == "Início":
                         InicioCliente()
                     elif pagina_selecionada == "Upload de arquivos":
@@ -113,12 +132,12 @@ try:
                         MostraCarteira()
             elif not authentication_status:
                 with info:
-                    st.error('Senha ou usuário incorreto.')
+                    st.error("Senha ou usuário incorreto.")
             else:
                 with info:
-                    st.warning('Por favor, digite suas informações')
+                    st.warning("Por favor, digite suas informações")
         else:
             with info:
-                st.warning('Usuário ou senha não correspondem.')
+                st.warning("Usuário ou senha não correspondem.")
 except:
-    st.success('Atualize a página')
+    st.success("Atualize a página")
