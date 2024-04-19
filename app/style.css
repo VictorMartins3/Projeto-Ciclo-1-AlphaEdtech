@@ -22,6 +22,14 @@
     width: 100%;
 }
 
+#MainMenu{
+    display: none;
+}
+
+.stDeployButton > button{
+    display: none;
+}
+
 #login{
     text-align: center;
 }
@@ -41,4 +49,25 @@
     font-size: 20px;
     height: 20px;
     width: 100%;
+}
+
+#seja-bem-vindo{
+    text-align: center;
+}
+
+
+#stHeading{
+    text-align: center;
+}
+
+#MainMenu{
+    text-align: center;
+}
+
+#dados-cnh{
+    text-align: center;
+}
+
+#dados-rg{
+    text-align: center;
 }

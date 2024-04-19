@@ -2,13 +2,13 @@ import streamlit as st
 import streamlit_authenticator as stauth
 from dependancies import sign_up
 from dependancies import fetch_users
-import os
-from Pages.Cliente.Upload import Upload
+from Pages.Cliente.Upload import Instrucoes
 from Pages.Cliente.Carteira import MostraCarteira
 from Pages.Cliente.Inicio import InicioCliente
 from Pages.Adm.Administrador import InicioAdministrador
 
-st.set_page_config(page_title="App", page_icon="🐍", initial_sidebar_state="expanded")
+
+st.set_page_config(page_title="App", page_icon="🐍", layout='centered', initial_sidebar_state="expanded")
 
 with open(r"app\style.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
@@ -21,7 +21,7 @@ if "themes" not in ms:
         "dark": {
             "theme.base": "dark",
             "theme.backgroundColor": "black",
-            "theme.primaryColor": "#c98bdb",
+            "theme.primaryColor": "#0A410C",
             "theme.secondaryBackgroundColor": "#262730",
             "theme.textColor": "white",
             "button_face": "🌜",
@@ -29,7 +29,7 @@ if "themes" not in ms:
         "light": {
             "theme.base": "light",
             "theme.backgroundColor": "white",
-            "theme.primaryColor": "#5591f5",
+            "theme.primaryColor": "#071931",
             "theme.secondaryBackgroundColor": "#d4d4d4",
             "theme.textColor": "black",
             "button_face": "🌞",
@@ -116,18 +116,18 @@ try:
                     st.sidebar.subheader("Modo administrador")
                     Authenticator.logout("Sair", "sidebar")
                     InicioAdministrador()
-                else:
+                else:                    
                     st.sidebar.subheader(f"Bem vindo {username}")
                     with st.sidebar:
                         pagina_selecionada = st.selectbox(
                             "Selecione uma página",
-                            ["Início", "Upload de arquivos", "Minha carteira"],
+                            ["Início", "Upload", "Minha carteira"],
                         )
                     Authenticator.logout("Sair", "sidebar")
                     if pagina_selecionada == "Início":
                         InicioCliente()
-                    elif pagina_selecionada == "Upload de arquivos":
-                        Upload()
+                    elif pagina_selecionada == "Upload":
+                        Instrucoes()
                     elif pagina_selecionada == "Minha carteira":
                         MostraCarteira()
             elif not authentication_status:

@@ -5,6 +5,7 @@ import re
 import bcrypt
 import os
 from dotenv import load_dotenv
+import json
 
 # Carregar variaveis do arquivo .env
 load_dotenv()
@@ -23,6 +24,7 @@ def connect_to_postgresql():
     except (Exception, psycopg2.DatabaseError) as error:
         st.error(f"Erro ao conectar ao banco de dados: {error}")
         return None
+
 
 
 conn = connect_to_postgresql()
@@ -56,7 +58,7 @@ def insert_user(email, username, password):
         st.error(f"Erro ao inserir usuário: {error}")
 
 
-def insert_user_dados(nome, doc_identidade, org_emissor, uf, cpf, data_nascimento):
+def insert_user_dados(dados):
     try:
         cursor = conn.cursor()
 
@@ -65,9 +67,7 @@ def insert_user_dados(nome, doc_identidade, org_emissor, uf, cpf, data_nasciment
             VALUES (%s, %s, %s, %s, %s, %s)
         """
         cursor = conn.cursor()
-        cursor.execute(
-            insert_query, (nome, doc_identidade, org_emissor, uf, cpf, data_nascimento)
-        )
+        cursor.execute(insert_query, (dados))
 
         conn.commit()
 
@@ -213,16 +213,14 @@ def sign_up():
                 else:
                     st.warning("Email inválido")
 
-def input_dados():                   
+def input_user_cnh():                   
     with st.form(key='dados', clear_on_submit=True):
-        nome_value = "Luan Oliveira"
-        cpf_value = "4002-8922"
-        st.subheader(':green[Dados]')
-        nome = st.text_input(':green[Nome]', placeholder='Digite seu Nome Completo', value=nome_value)
-        doc_identidade = st.text_input(':green[Identidade]', placeholder='Digite seu documento da identidade')
+        st.subheader(':green[Dados CNH]')
+        nome = st.text_input(':green[Nome]', placeholder='Digite seu Nome Completo', )
+        cpf = st.text_input(':green[CPF]', placeholder='Digite seu CPF', help="Exemplo: 123.456.789-10")
+        numero_validador = st.text_input(':green[Numero validador da CNH]', placeholder="Digite o número validador da CNH", help="Números na posição vertical")
         org_emissor = st.text_input(':green[Órgão Emissor]', placeholder='Digite o órgão emissor', help="Exemplo: SSP")
-        uf =  st.text_input(':green[UF]', placeholder='Digite a UF', help="Siglas do estado em que a carteira de identidade foi emitida.")
-        cpf = st.text_input(':green[CPF]', placeholder='Digite seu CPF', value=cpf_value, help="Exemplo: 123.456.789-10")
+        uf =  st.text_input(':green[UF]', placeholder='Digite a UF', help="Siglas do estado em que a CNH foi emitida.")
         min_date = datetime.date(1920, 1, 1)
         max_date = datetime.date(2007, 1, 1)
         data_nascimento = st.date_input(':green[Data de nascimento]', value=None, min_value=min_date, max_value=max_date)
@@ -230,31 +228,78 @@ def input_dados():
         
         if enviar_dados:
             if nome and validate_name(nome):
-                if doc_identidade and len(doc_identidade) > 5:
+                if numero_validador:
                     if org_emissor:
                         if uf and len(uf)==2:
                             if cpf and validate_cpf(cpf):
                                 if data_nascimento:
-                                    insert_user_dados(
-                                        nome,
-                                        doc_identidade,
-                                        org_emissor,
-                                        uf,
-                                        cpf,
-                                        data_nascimento,
-                                    )
+                                    dados = {
+                                    "name": nome,
+                                    "validator_number": numero_validador,
+                                    "org_emissor": org_emissor,
+                                    "uf": uf,
+                                    "cpf_number": cpf,
+                                    "birthdate": data_nascimento
+                                    }
+                                    # Converta o dicionário para uma string JSON
+                                    print(dados)
+                                    st.write(dados)
                                 else:
-                                    st.warning("Insira a data de nascimento")
+                                    st.warning("Insira a data de nascimento.")
                             else:
                                 st.warning("Insira o CPF")
                         else:
                             st.warning("A UF deve ter dois dígitos.")
                     else:
-                        st.warning("Insira o Órgão emissor")
+                        st.warning("Insira o Órgão emissor.")
                 else:
-                    st.warning('Insira uma identidade válida')
+                    st.warning('Número inválido.')
             else:
-                st.warning('Insira um nome válido')
+                st.warning('Insira um nome válido.')
+                
+def input_user_rg():                   
+    with st.form(key='dados', clear_on_submit=True):
+        st.subheader(':green[Dados RG]')
+        nome = st.text_input(':green[Nome]', placeholder='Digite seu Nome Completo', )
+        cpf = st.text_input(':green[CPF]', placeholder='Digite seu CPF', help="Exemplo: 123.456.789-10")
+        rg = st.text_input(':green[Numero RG]', placeholder="Digite o número do seu RG", help="EX: MG-12.345.678-10")
+        org_emissor = st.text_input(':green[Órgão Emissor]', placeholder='Digite o órgão emissor', help="Exemplo: SSP")
+        uf =  st.text_input(':green[UF]', placeholder='Digite a UF', help="Siglas do estado em que a carteira de identidade foi emitida.")
+        min_date = datetime.date(1920, 1, 1)
+        max_date = datetime.date(2007, 1, 1)
+        data_nascimento = st.date_input(':green[Data de nascimento]', value=None, min_value=min_date, max_value=max_date)
+        enviar_dados = st.form_submit_button('Enviar')
+        
+        if enviar_dados:
+            if nome and validate_name(nome):
+                if cpf and validate_cpf(cpf):
+                    if rg:
+                        if uf and len(uf)==2:
+                            if org_emissor:
+                                if data_nascimento:
+                                    dados = {
+                                    "name": nome,
+                                    "cpf_number": cpf,
+                                    "rg": rg,
+                                    "uf": uf,
+                                    "org_emissor": org_emissor,
+                                    "birthdate": data_nascimento
+                                    }
+                                    # Converta o dicionário para uma string JSON
+                                    print(dados)
+                                    st.write(dados)
+                                else:
+                                    st.warning("Insira a data de nascimento.")
+                            else:
+                                st.warning("Insira o orgão emissor.")
+                        else:
+                            st.warning("A UF deve ter dois dígitos.")
+                    else:
+                        st.warning("Insira um RG válido.")
+                else:
+                    st.warning('Insira um CPF válido.')
+            else:
+                st.warning('Insira um nome válido.')
                 
 # Executa a página de cadastro
 # sign_up()
