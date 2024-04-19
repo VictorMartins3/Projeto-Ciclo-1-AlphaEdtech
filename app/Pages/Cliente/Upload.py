@@ -12,7 +12,8 @@ sys.path.append(
 
 from services.preprocessing import *
 from services.ocr_service import *
-from services.posprocessing import *
+from services.cnh_detection import cnh_detection
+from services.rg_detection import rg_detection
 
 def UploadCNH():
     st.write(" ")
@@ -28,11 +29,8 @@ def UploadCNH():
                 image_bytes = uploaded_file.read()
                 image_array = np.frombuffer(image_bytes, dtype=np.uint8)
 
-                # Carragando a imagem
-                image = load_image(image_array)
-
-                # Alinhando a imagem
-                imagem_alinhada = align_images(image)
+                # Carragando a imagem e Alinhando a imagem
+                imagem_alinhada = preprocess(image_array)
 
                 # Mostrando a imagem alinhada
                 st.image(imagem_alinhada, caption="Imagem Alinhada")
@@ -40,56 +38,27 @@ def UploadCNH():
                 # Realizando o OCR
                 ocr_results = ocr(imagem_alinhada)
 
-                # # Mostrar resultado do OCR
-                # st.write("Resultado do OCR: ", ocr_results)
+                try:
+                    dados = cnh_detection(imagem_alinhada, ocr_results)
+                except Exception as e:
+                    st.write('erro: ',e)
+                st.write("Versão da CNH: ", dados['versao'])
 
-                # Verificando a versão da CNH
-                cnh_version = verificar_versao_cnh(ocr_results)
+                st.write("Nome: ", dados['nome'])
 
-                st.write("Versão da CNH: ", cnh_version)
+                st.write("RG: ", dados['rg'])
 
-                # Encontrando os pontos chave
-                key_points = keypoints(cnh_version)
+                st.write("Emissor: ", dados['emissor'])
 
-                # # Mostrar pontos chave
-                # st.write("Pontos Chave: ", key_points)
+                st.write("UF: ", dados['uf'])
 
-                # Encontrando o nome na imagem
-                roi_nome, tp_nome, largura_nome, altura_nome, nome = extract_roi(
-                    imagem_alinhada,
-                    ocr_results,
-                    key_points["nome"],
-                    data_type="varchar",
-                )
+                st.write("CPF: ", dados['cpf'])
 
-                # Validação do nome
-                novo_nome = valida_nome(
-                    imagem_alinhada, tp_nome, largura_nome, altura_nome, nome
-                )
+                st.write("Data de Nascimento: ", dados['data de nascimento'])
 
-                st.write("Nome: ", novo_nome)
-
-                # Encontrando o RG na imagem
-                roi_rg, tp_rg, largura_rg, altura_rg, rg = extract_roi(
-                    imagem_alinhada, ocr_results, key_points["rg"]
-                )
-
-                # Validação do RG
-                novo_rg = valida_rg(imagem_alinhada, tp_rg, largura_rg, altura_rg, rg)
-
-                st.write("RG: ", novo_rg)
-
-                # Encontrando o CPF na imagem
-                roi_cpf, tp_cpf, largura_cpf, altura_cpf, cpf = extract_roi(
-                    imagem_alinhada, ocr_results, key_points["cpf"]
-                )
-
-                # Validação do CPF
-                novo_cpf = valida_cpf(
-                    imagem_alinhada, tp_cpf, largura_cpf, altura_cpf, cpf
-                )
-
-                st.write("CPF: ", novo_cpf)
+                st.write("Nº de Registro: ", dados['registro'])
+        
+                st.write("Nº de Autenticação: ", dados['numero verificador'])
 
             else:
                 st.error("Nenhum arquivo foi carregado.")
@@ -118,11 +87,8 @@ def UploadRG():
                 image_bytes = uploaded_file.read()
                 image_array = np.frombuffer(image_bytes, dtype=np.uint8)
 
-                # Carragando a imagem
-                image = load_image(image_array)
-
-                # Alinhando a imagem
-                imagem_alinhada = align_images(image)
+                # Carragando a imagem e Alinhando a imagem
+                imagem_alinhada = preprocess(image_array)
 
                 # Mostrando a imagem alinhada
                 st.image(imagem_alinhada, caption="Imagem Alinhada")
@@ -130,56 +96,17 @@ def UploadRG():
                 # Realizando o OCR
                 ocr_results = ocr(imagem_alinhada)
 
-                # # Mostrar resultado do OCR
-                # st.write("Resultado do OCR: ", ocr_results)
+                try:
+                        dados = rg_detection(imagem_alinhada, ocr_results)
+                except Exception as e:
+                    st.write('erro: ',e)
+                st.write("Nome: ", dados['nome'])
 
-                # Verificando a versão da CNH
-                cnh_version = verificar_versao_cnh(ocr_results)
+                st.write("RG: ", dados['rg'])
 
-                st.write("Versão da CNH: ", cnh_version)
+                st.write("CPF: ", dados['cpf'])
 
-                # Encontrando os pontos chave
-                key_points = keypoints(cnh_version)
-
-                # # Mostrar pontos chave
-                # st.write("Pontos Chave: ", key_points)
-
-                # Encontrando o nome na imagem
-                roi_nome, tp_nome, largura_nome, altura_nome, nome = extract_roi(
-                    imagem_alinhada,
-                    ocr_results,
-                    key_points["nome"],
-                    data_type="varchar",
-                )
-
-                # Validação do nome
-                novo_nome = valida_nome(
-                    imagem_alinhada, tp_nome, largura_nome, altura_nome, nome
-                )
-
-                st.write("Nome: ", novo_nome)
-
-                # Encontrando o RG na imagem
-                roi_rg, tp_rg, largura_rg, altura_rg, rg = extract_roi(
-                    imagem_alinhada, ocr_results, key_points["rg"]
-                )
-
-                # Validação do RG
-                novo_rg = valida_rg(imagem_alinhada, tp_rg, largura_rg, altura_rg, rg)
-
-                st.write("RG: ", novo_rg)
-
-                # Encontrando o CPF na imagem
-                roi_cpf, tp_cpf, largura_cpf, altura_cpf, cpf = extract_roi(
-                    imagem_alinhada, ocr_results, key_points["cpf"]
-                )
-
-                # Validação do CPF
-                novo_cpf = valida_cpf(
-                    imagem_alinhada, tp_cpf, largura_cpf, altura_cpf, cpf
-                )
-
-                st.write("CPF: ", novo_cpf)
+                st.write("Data de Nascimento: ", dados['data de nascimento'])
 
             else:
                 st.error("Nenhum arquivo foi carregado.")
