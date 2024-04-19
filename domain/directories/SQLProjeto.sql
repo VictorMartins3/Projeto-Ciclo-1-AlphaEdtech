@@ -9,25 +9,17 @@ CREATE TABLE IF NOT EXISTS public."Documento"
     CONSTRAINT id_doc_pk PRIMARY KEY (id_doc)
 );
 
-CREATE TABLE IF NOT EXISTS public."Login_table"
+CREATE TABLE IF NOT EXISTS public."Usuario"
 (
-    id_login serial NOT NULL,
+    id_usuario serial NOT NULL,
     email character varying(255) NOT NULL,
-    nome_usuario character varying(100) NOT NULL,
     senha character varying(255) NOT NULL,
-    usuario_id integer,
-    CONSTRAINT id_login_pk PRIMARY KEY (id_login)
-);
-
-CREATE TABLE IF NOT EXISTS public."Perfil_Usuario"
-(
-    id_perfil serial NOT NULL,
     nome character varying(255) NOT NULL,
-    telefone bigint NOT NULL,
-    endereco text NOT NULL,
+    telefone bigint,
+    endereco text,
     sexo boolean,
-    data_criacao_conta timestamp with time zone NOT NULL,
-    CONSTRAINT id_perfil_pk PRIMARY KEY (id_perfil)
+    data_criacao_conta timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT id_usuario_pk PRIMARY KEY (id_usuario)
 );
 
 CREATE TABLE IF NOT EXISTS public."RG"
@@ -92,15 +84,7 @@ CREATE TABLE IF NOT EXISTS public."CNH"
 
 ALTER TABLE IF EXISTS public."Documento"
     ADD CONSTRAINT usuario_id_fk FOREIGN KEY (usuario_id)
-    REFERENCES public."Perfil_Usuario" (id_perfil) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-
-
-ALTER TABLE IF EXISTS public."Login_table"
-    ADD CONSTRAINT usuario_id_fk FOREIGN KEY (usuario_id)
-    REFERENCES public."Perfil_Usuario" (id_perfil) MATCH SIMPLE
+    REFERENCES public."Usuario" (id_usuario) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
@@ -123,13 +107,10 @@ ALTER TABLE IF EXISTS public."CNH"
 
 CREATE INDEX IF NOT EXISTS idx_id_doc ON "Documento"(id_doc);
 
-CREATE INDEX IF NOT EXISTS idx_email ON "Login_table"(email);
-CREATE INDEX IF NOT EXISTS idx_nome_usuario ON "Login_table"(nome_usuario);
-CREATE INDEX IF NOT EXISTS idx_id_login ON "Login_table"(id_login);
-
-CREATE INDEX IF NOT EXISTS idx_id_perfil ON "Perfil_Usuario"(id_perfil);
-CREATE INDEX IF NOT EXISTS idx_nome ON "Perfil_Usuario"(nome);
-CREATE INDEX IF NOT EXISTS idx_data_criacao_conta ON "Perfil_Usuario" USING BRIN (data_criacao_conta);
+CREATE INDEX IF NOT EXISTS idx_email ON "Usuario"(email);
+CREATE INDEX IF NOT EXISTS idx_id_usuario ON "Usuario"(id_usuario);
+CREATE INDEX IF NOT EXISTS idx_nome ON "Usuario"(nome);
+CREATE INDEX IF NOT EXISTS idx_data_criacao_conta ON "Usuario" USING BRIN (data_criacao_conta);
 
 CREATE INDEX IF NOT EXISTS idx_doc_id_rg ON "RG"(doc_id);
 CREATE INDEX IF NOT EXISTS idx_orgao_emissor ON "RG"(orgao_emissor);
