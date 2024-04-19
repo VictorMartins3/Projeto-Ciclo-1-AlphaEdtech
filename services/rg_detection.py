@@ -11,7 +11,7 @@ def rg_detection(aligned, resultados):
             'nascimento': (840, 440),
             }
 
-    roi_nome, tp_nome, largura_nome, altura_nome, nome = extract_roi(aligned, resultados, key_points['nome'])
+    roi_nome, tp_nome, largura_nome, altura_nome, nome = extract_roi(aligned, resultados, key_points['nome'], data_type = 'varchar')
     dados_rg['nome'] = valida_nome_rg(aligned, tp_nome, largura_nome, altura_nome, nome)
 
     roi_rg, tp_rg, largura_rg, altura_rg, rg = extract_roi(aligned, resultados, key_points['rg'])    

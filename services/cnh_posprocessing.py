@@ -118,10 +118,11 @@ def valida_data_cnh(imagem, top_left, w, h, data):
             return partes[-1]
     else:
         nova_roi = imagem[
-            top_left[1] - 10 : top_left[1] + h + 10, top_left[0] + 270 : top_left[0] + 470
+            top_left[1] - 10 : top_left[1] + h + 10, top_left[0] : 
         ]
         resultado_data = ocr(nova_roi)
         data = "".join([caracter for _, caracter, confianca in resultado_data if confianca > 0.3])
+        data = re.sub(r'[^0-9\/]', '', data)
         if len(data) > 10:
             return data[len(data)-10:]
         else:

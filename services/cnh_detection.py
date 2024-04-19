@@ -7,7 +7,7 @@ def cnh_detection(aligned, resultados):
     dados_cnh['versao'] = verificar_versao_cnh(resultados)
     key_points = cnh_keypoints(dados_cnh['versao'])
     
-    roi_nome, tp_nome, largura_nome, altura_nome, nome = extract_roi(aligned, resultados, key_points['nome'])
+    roi_nome, tp_nome, largura_nome, altura_nome, nome = extract_roi(aligned, resultados, key_points['nome'], data_type = 'varchar')
     dados_cnh['nome'] = valida_nome_cnh(aligned, tp_nome, largura_nome, altura_nome, nome)
 
     roi_rg, tp_rg, largura_rg, altura_rg, rg = extract_roi(aligned, resultados, key_points['rg'])    
@@ -17,7 +17,7 @@ def cnh_detection(aligned, resultados):
     dados_cnh['cpf'] = valida_cpf_cnh(aligned, tp_cpf, largura_cpf, altura_cpf, cpf)
 
     roi_data, tp_data, largura_data, altura_data, data= extract_roi(aligned, resultados, key_points['nascimento'])
-    dados_cnh['data de nascimento']  = valida_data_cnh(aligned, tp_cpf, largura_data, altura_data, data)
+    dados_cnh['data de nascimento']  = valida_data_cnh(aligned, tp_data, largura_data, altura_data, data)
 
     roi_registro, tp_registro, largura_registro, altura_registro, dados_cnh['registro'] = extract_roi(aligned, resultados, key_points['registro']) 
 

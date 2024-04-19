@@ -21,19 +21,28 @@ def crop_rotate(img, x1=65, y1=382, x2=201, y2=800):
     return cv2.rotate(cropped_image, direction)
 
 
-def extract_roi(img_ocr, result, key_point):
+def extract_roi(img_ocr, result, key_point, data_type='digit'):
     min_distance = float("inf")
     closest_bbox = None
     roi_text = None
     for t in result:
         bbox, text, score = t
         height = bbox[3][1] - bbox[0][1]
-        if score > 0.3 and height > 26:
-            distance = distance_points(key_point, bbox[0])
-            if distance < min_distance:
-                min_distance = distance
-                closest_bbox = bbox
-                roi_text = text
+        if data_type == 'digit':
+            if score > 0.3 and height > 27 and not text.replace(" ", "").isalpha():
+                distance = distance_points(key_point, bbox[0])
+                if distance < min_distance:
+                    min_distance = distance
+                    closest_bbox = bbox
+                    roi_text = text
+        else:
+            if score > 0.3 and height > 27:
+                distance = distance_points(key_point, bbox[0])
+                if distance < min_distance:
+                    min_distance = distance
+                    closest_bbox = bbox
+                    roi_text = text
+
     top_left, top_right, bottom_right = (
         closest_bbox[0],
         closest_bbox[1],
