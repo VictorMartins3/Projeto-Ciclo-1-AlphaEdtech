@@ -26,7 +26,6 @@ def connect_to_postgresql():
         return None
 
 
-
 conn = connect_to_postgresql()
 
 
@@ -38,14 +37,16 @@ def insert_user(email, username, password):
 
         hashed_password = hash_password(password)
 
+        active = False
+
         insert_query = """
-            INSERT INTO users (email, username, password, date_joined)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO users (username, email, password, date_joined, active)
+            VALUES (%s, %s, %s, %s, %s)
         """
 
         cursor.execute(
             insert_query,
-            (email, username, hashed_password.decode("utf-8"), date_joined),
+            (username, email, hashed_password.decode("utf-8"), date_joined, active),
         )
 
         conn.commit()
@@ -57,26 +58,74 @@ def insert_user(email, username, password):
     except (Exception, psycopg2.DatabaseError) as error:
         st.error(f"Erro ao inserir usuário: {error}")
 
-
-def insert_user_dados(dados):
+def insert_user_cnh(json_data):
     try:
         cursor = conn.cursor()
 
         insert_query = """
-            INSERT INTO users_dados (nome, doc_identidade, org_emissor, uf, cpf, data_nascimento)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO doc_cnh (name, cpf_number, rg_number, place, birthdate, registration_number, validator_number)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
-        cursor = conn.cursor()
-        cursor.execute(insert_query, (dados))
+
+        data = json.loads(json_data)
+
+        cursor.execute(
+            insert_query, (
+                data['name'], 
+                data['cpf_number'], 
+                data['rg_number'], 
+                data['uf'], 
+                data['birthdate'], 
+                data['registration_number'], 
+                data['validator_number']
+            )
+        )
 
         conn.commit()
 
         cursor.close()
-        
-        st.success("Dados inseridos com ssucesso!")
+        st.success("Dados inseridos com sucesso!")
         st.balloons()
     except (Exception, psycopg2.DatabaseError) as error:
-        st.error(f"Erro ao inserir usuário: {error}")
+        st.error(f"Erro ao inserir dados: {error}")
+
+def insert_user_rg(json_data):
+    try:
+        cursor = conn.cursor()
+
+        insert_query = """
+            INSERT INTO doc_rg (name, rg_number, cpf_number, emission_date, place_of_birth, birthdate, photo, father_name, mother_name, signature, doc_origin, observation, id_user)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+
+        data = json.loads(json_data)
+
+        cursor.execute(
+            insert_query, (
+                data['name'], 
+                data['rg_number'], 
+                data['cpf_number'], 
+                data['emission_date'], 
+                data['place_of_birth'], 
+                data['birthdate'], 
+                data['photo'], 
+                data['father_name'], 
+                data['mother_name'], 
+                data['signature'], 
+                data['doc_origin'], 
+                data['observation'], 
+                data['id_user']
+            )
+        )
+
+        conn.commit()
+
+        cursor.close()
+
+        st.success("Dados inseridos com sucesso!")
+        st.balloons()
+    except (Exception, psycopg2.DatabaseError) as error:
+        st.error(f"Erro ao inserir dados: {error}")
 
 
 def fetch_users():
@@ -218,14 +267,16 @@ def input_user_cnh():
         st.subheader(':green[Dados CNH]')
         nome = st.text_input(':green[Nome]', placeholder='Digite seu Nome Completo', )
         cpf = st.text_input(':green[CPF]', placeholder='Digite seu CPF', help="Exemplo: 123.456.789-10")
+        rg = st.text_input(':green[RG]', placeholder='Digite seu RG', help="Exemplo: 1234567")
         numero_validador = st.text_input(':green[Numero validador da CNH]', placeholder="Digite o número validador da CNH", help="Números na posição vertical")
+        numero_registro = st.text_input(':green[Numero de Registro da CNH]', placeholder="Digite o número de Registro da CNH", help="Número de Registro")
         org_emissor = st.text_input(':green[Órgão Emissor]', placeholder='Digite o órgão emissor', help="Exemplo: SSP")
         uf =  st.text_input(':green[UF]', placeholder='Digite a UF', help="Siglas do estado em que a CNH foi emitida.")
         min_date = datetime.date(1920, 1, 1)
         max_date = datetime.date(2007, 1, 1)
         data_nascimento = st.date_input(':green[Data de nascimento]', value=None, min_value=min_date, max_value=max_date)
         enviar_dados = st.form_submit_button('Enviar')
-        
+        postgres_date = data_nascimento.strftime('%Y-%m-%d')
         if enviar_dados:
             if nome and validate_name(nome):
                 if numero_validador:
@@ -235,14 +286,18 @@ def input_user_cnh():
                                 if data_nascimento:
                                     dados = {
                                     "name": nome,
+                                    "cpf_number": cpf,
                                     "validator_number": numero_validador,
+                                    "registration_number": numero_registro,
                                     "org_emissor": org_emissor,
                                     "uf": uf,
-                                    "cpf_number": cpf,
-                                    "birthdate": data_nascimento
+                                    "birthdate": postgres_date,
+                                    "rg_number": rg
                                     }
                                     # Converta o dicionário para uma string JSON
                                     print(dados)
+                                    dados_json = json.dumps(dados)
+                                    insert_user_cnh(dados_json)
                                     st.write(dados)
                                 else:
                                     st.warning("Insira a data de nascimento.")
