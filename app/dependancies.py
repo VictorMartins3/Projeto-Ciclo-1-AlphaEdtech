@@ -25,7 +25,6 @@ def connect_to_postgresql():
         st.error(f"Erro ao conectar ao banco de dados: {error}")
         return None
 
-
 conn = connect_to_postgresql()
 
 
@@ -94,8 +93,8 @@ def insert_user_rg(json_data):
         cursor = conn.cursor()
 
         insert_query = """
-            INSERT INTO doc_rg (name, rg_number, cpf_number, emission_date, place_of_birth, birthdate, photo, father_name, mother_name, signature, doc_origin, observation, id_user)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO doc_rg (name, cpf_number, birthdate, rg_number, emission_date)
+            VALUES (%s, %s, %s, %s, %s)
         """
 
         data = json.loads(json_data)
@@ -103,18 +102,10 @@ def insert_user_rg(json_data):
         cursor.execute(
             insert_query, (
                 data['name'], 
-                data['rg_number'], 
                 data['cpf_number'], 
-                data['emission_date'], 
-                data['place_of_birth'], 
-                data['birthdate'], 
-                data['photo'], 
-                data['father_name'], 
-                data['mother_name'], 
-                data['signature'], 
-                data['doc_origin'], 
-                data['observation'], 
-                data['id_user']
+                data['birthdate'],
+                data['rg_number'],
+                data['emission_date']
             )
         )
 
@@ -318,29 +309,31 @@ def input_user_rg():
         nome = st.text_input(':green[Nome]', placeholder='Digite seu Nome Completo', )
         cpf = st.text_input(':green[CPF]', placeholder='Digite seu CPF', help="Exemplo: 123.456.789-10")
         rg = st.text_input(':green[Numero RG]', placeholder="Digite o número do seu RG", help="EX: MG-12.345.678-10")
-        org_emissor = st.text_input(':green[Órgão Emissor]', placeholder='Digite o órgão emissor', help="Exemplo: SSP")
-        uf =  st.text_input(':green[UF]', placeholder='Digite a UF', help="Siglas do estado em que a carteira de identidade foi emitida.")
         min_date = datetime.date(1920, 1, 1)
         max_date = datetime.date(2007, 1, 1)
         data_nascimento = st.date_input(':green[Data de nascimento]', value=None, min_value=min_date, max_value=max_date)
+        data_emissao = st.date_input(':green[Data de emissão]', value=None, min_value=min_date)
         enviar_dados = st.form_submit_button('Enviar')
-        
+        postgres_date = data_nascimento.strftime('%Y-%m-%d')
+        postgres_date_emissao = data_emissao.strftime('%Y-%m-%d')
+
         if enviar_dados:
             if nome and validate_name(nome):
                 if cpf and validate_cpf(cpf):
                     if rg:
-                        if uf and len(uf)==2:
-                            if org_emissor:
+                        if cpf and len(cpf)>2:
+                            if cpf:
                                 if data_nascimento:
                                     dados = {
                                     "name": nome,
                                     "cpf_number": cpf,
-                                    "rg": rg,
-                                    "uf": uf,
-                                    "org_emissor": org_emissor,
-                                    "birthdate": data_nascimento
+                                    "rg_number": rg,
+                                    "emission_date": postgres_date_emissao,
+                                    "birthdate": postgres_date
                                     }
                                     # Converta o dicionário para uma string JSON
+                                    dados_json = json.dumps(dados)
+                                    insert_user_rg(dados_json)
                                     print(dados)
                                     st.write(dados)
                                 else:
