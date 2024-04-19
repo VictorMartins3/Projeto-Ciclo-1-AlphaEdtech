@@ -76,33 +76,7 @@ def align_images(img):
     four_points_orig = four_points * multiplier
     four_points_orig = four_points_orig.astype(int)
     warped = four_point_transform(img, four_points_orig)
-    warped = imutils.resize(warped, width=1100).copy()
-    return warped
-
-
-def align_images_rg(img):
-    img_re, size = resizer(img)
-    detail = cv2.detailEnhance(img_re, sigma_s=20, sigma_r=0.15)
-    gray = gray_scale(detail)
-    blur = noise_removal(gray)
-    edged = cv2.Canny(blur, 75, 200)
-    kernel = np.ones((5, 5), np.uint8)
-    dilate = cv2.dilate(edged, kernel, iterations=1)
-    closing = cv2.morphologyEx(dilate, cv2.MORPH_CLOSE, kernel)
-    contours = cv2.findContours(closing, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    contours = imutils.grab_contours(contours)
-    contours = sorted(contours, key=cv2.contourArea, reverse=True)[:5]
-    for contour in contours:
-        peri = cv2.arcLength(contour, True)
-        approx = cv2.approxPolyDP(contour, 0.02 * peri, True)
-        if len(approx) == 4:
-            four_points = np.squeeze(approx)
-            break
-    # find four points for original image
-    multiplier = img.shape[1] / size[0]
-    four_points_orig = four_points * multiplier
-    four_points_orig = four_points_orig.astype(int)
-    warped = four_point_transform(img, four_points_orig)
+    warped = cv2.resize(warped, (1100,780)).copy()
     warped = cv2.detailEnhance(warped, sigma_s=20, sigma_r=0.20)
     return warped
 
