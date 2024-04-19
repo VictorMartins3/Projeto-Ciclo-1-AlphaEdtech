@@ -84,4 +84,4 @@ def align_images(img):
 def preprocess(img_path):
     img = load_image(img_path)
     aligned = align_images(img)
-    return img, aligned
+    return aligned
