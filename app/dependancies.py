@@ -97,8 +97,8 @@ def insert_user_rg(json_data):
         cursor = conn.cursor()
 
         insert_query = """
-            INSERT INTO doc_rg (name, cpf_number, birthdate, rg_number, emission_date)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO doc_rg (name, rg_number, cpf_number, birthdate)
+            VALUES (%s, %s, %s, %s)
         """
 
         data = json.loads(json_data)
@@ -107,10 +107,9 @@ def insert_user_rg(json_data):
             insert_query,
             (
                 data["name"],
+                data["rg_number"],
                 data["cpf_number"],
                 data["birthdate"],
-                data["rg_number"],
-                data["emission_date"],
             ),
         )
 
@@ -277,6 +276,7 @@ def input_user_cnh(
     registro=None,
     autenticacao=None,
 ):
+
     with st.form(key="dados", clear_on_submit=True):
         st.subheader(":green_car[Dados CNH]")  # Correção do emoji
         nome = st.text_input(
@@ -364,67 +364,101 @@ def input_user_cnh(
                 st.warning("Insira um nome válido.")
 
 
-def input_user_rg():
+def input_user_rg(
+    nome=None,
+    rg=None,
+    cpf=None,
+    data_nascimento=None,
+):
+
     with st.form(key="dados", clear_on_submit=True):
-        st.subheader(":green[Dados RG]")
+        st.subheader(":green_car[Dados RG]")
         nome = st.text_input(
-            ":green[Nome]",
-            placeholder="Digite seu Nome Completo",
-        )
-        cpf = st.text_input(
-            ":green[CPF]", placeholder="Digite seu CPF", help="Exemplo: 123.456.789-10"
+            ":green_car[Nome]", value=nome, placeholder="Digite seu Nome Completo"
         )
         rg = st.text_input(
-            ":green[Numero RG]",
-            placeholder="Digite o número do seu RG",
-            help="EX: MG-12.345.678-10",
+            ":green_car[RG]",
+            value=rg,
+            placeholder="Digite seu RG",
+            help="Exemplo: 1234567",
         )
-        min_date = datetime.date(1920, 1, 1)
-        max_date = datetime.date(2007, 1, 1)
-        data_nascimento = st.date_input(
-            ":green[Data de nascimento]",
-            value=None,
-            min_value=min_date,
-            max_value=max_date,
-        )
-        data_emissao = st.date_input(
-            ":green[Data de emissão]", value=None, min_value=min_date
-        )
-        enviar_dados = st.form_submit_button("Enviar")
-        postgres_date = data_nascimento.strftime("%Y-%m-%d")
-        postgres_date_emissao = data_emissao.strftime("%Y-%m-%d")
 
+        cpf = st.text_input(
+            ":green_car[CPF]",
+            value=cpf,
+            placeholder="Digite seu CPF",
+            help="Exemplo: 123.456.789-10",
+        )
+
+        data_nascimento = st.text_input(
+            ":green_car[Data de nascimento]",
+            value=data_nascimento,
+            placeholder="DD/MM/YYYY",
+        )
+
+        enviar_dados = st.form_submit_button("Enviar")
         if enviar_dados:
             if nome and validate_name(nome):
                 if cpf and validate_cpf(cpf):
                     if rg:
-                        if cpf and len(cpf) > 2:
-                            if cpf:
-                                if data_nascimento:
-                                    dados = {
-                                        "name": nome,
-                                        "cpf_number": cpf,
-                                        "rg_number": rg,
-                                        "emission_date": postgres_date_emissao,
-                                        "birthdate": postgres_date,
-                                    }
-                                    # Converta o dicionário para uma string JSON
-                                    dados_json = json.dumps(dados)
-                                    insert_user_rg(dados_json)
-                                    print(dados)
-                                    st.write(dados)
-                                else:
-                                    st.warning("Insira a data de nascimento.")
-                            else:
-                                st.warning("Insira o orgão emissor.")
+                        if data_nascimento:
+                            data_nascimento_obj = datetime.strptime(
+                                data_nascimento, "%d/%m/%Y"
+                            )
+                            postgres_date = data_nascimento_obj.strftime("%Y-%m-%d")
+                            dados = {
+                                "name": nome,
+                                "cpf_number": cpf,
+                                "rg_number": rg,
+                                "birthdate": postgres_date,
+                            }
+                            dados_json = json.dumps(dados)
+                            insert_user_rg(dados_json)
+                            st.write(dados)
                         else:
-                            st.warning("A UF deve ter dois dígitos.")
+                            st.warning("Insira a data de nascimento.")
                     else:
                         st.warning("Insira um RG válido.")
                 else:
                     st.warning("Insira um CPF válido.")
             else:
                 st.warning("Insira um nome válido.")
+
+    #     enviar_dados = st.form_submit_button("Enviar")
+    #     postgres_date = data_nascimento.strftime("%Y-%m-%d")
+    #     postgres_date_emissao = data_emissao.strftime("%Y-%m-%d")
+
+    # if enviar_dados:
+    #     if nome and validate_name(nome):
+    #         if cpf and validate_cpf(cpf):
+    #             if rg:
+    #                 if cpf and len(cpf) > 2:
+    #                     if cpf:
+    #                         if data_nascimento:
+    #                             dados = {
+    #                                 "name": nome,
+    #                                 "cpf_number": cpf,
+    #                                 "rg_number": rg,
+    #                                 "emission_date": postgres_date_emissao,
+    #                                 "birthdate": postgres_date,
+    #                             }
+    #                             # Converta o dicionário para uma string JSON
+    #                             dados_json = json.dumps(dados)
+    #                             insert_user_rg(dados_json)
+    #                             print(dados)
+    #                             st.write(dados)
+    #                         else:
+    #                             st.warning("Insira a data de nascimento.")
+    #                     else:
+    #                         st.warning("Insira o orgão emissor.")
+    #                 else:
+    #                     st.warning("A UF deve ter dois dígitos.")
+    #             else:
+    #                 st.warning("Insira um RG válido.")
+    #         else:
+    #             st.warning("Insira um CPF válido.")
+    #     else:
+    #         st.warning("Insira um nome válido.")
 
 
 # Executa a página de cadastro

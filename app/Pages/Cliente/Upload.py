@@ -45,11 +45,9 @@ def UploadCNH():
                     )
                     for key, value in st.session_state["ocr_data"].items():
                         st.write(f"{key}: {value}")
-                    st.session_state["show_form"] = (
-                        True  # Defina um flag para mostrar o formulário
-                    )
+                    st.session_state["show_form"] = True
                 except Exception as e:
-                    st.error(f"Erro ao processar CNH: {str(e)}")
+                    st.error(f"Erro ao processar a foto da CNH: {str(e)}")
                     st.session_state["show_form"] = False
             else:
                 st.error(
@@ -77,53 +75,57 @@ def UploadCNH():
 
 
 def UploadRG():
+    if "form_submitted" not in st.session_state:
+        st.session_state["form_submitted"] = False
+    if "ocr_data" not in st.session_state:
+        st.session_state["ocr_data"] = None
+
     st.write(" ")
     st.write(" ")
 
     with st.form(key="include_cliente_foto"):
         uploaded_file = st.file_uploader("Imagem", type=["jpg", "png"])
-
         input_button_submit = st.form_submit_button("Enviar")
 
         if input_button_submit:
             if uploaded_file is not None:
+                st.session_state["form_submitted"] = True
                 image_bytes = uploaded_file.read()
                 image_array = np.frombuffer(image_bytes, dtype=np.uint8)
 
-                # Carragando a imagem e Alinhando a imagem
                 imagem_alinhada = preprocess(image_array)
-
-                # Mostrando a imagem alinhada
                 st.image(imagem_alinhada, caption="Imagem Alinhada")
-
-                # Realizando o OCR
                 ocr_results = ocr(imagem_alinhada)
 
                 try:
-                    dados = cnh_detection(imagem_alinhada, ocr_results)
+                    st.session_state["ocr_data"] = rg_detection(
+                        imagem_alinhada, ocr_results
+                    )
+                    for key, value in st.session_state["ocr_data"].items():
+                        st.write(f"{key}: {value}")
+                    st.session_state["show_form"] = True
                 except Exception as e:
-                    st.write("erro: ", e)
-
-                st.write("Nome: ", dados["nome"])
-
-                st.write("RG: ", dados["rg"])
-
-                st.write("CPF: ", dados["cpf"])
-
-                st.write("Data de Nascimento: ", dados["data de nascimento"])
-
+                    st.error(f"Erro ao processar a foto do RG: {str(e)}")
+                    st.session_state["show_form"] = False
             else:
-                st.error("Nenhum arquivo foi carregado.")
+                st.error(
+                    "Nenhum arquivo foi carregado. Por favor, faça upload de um arquivo e tente novamente."
+                )
+                st.session_state["show_form"] = False
 
-    st.write(" ")
-    st.write(" ")
-
-    st.write(
-        "Confira seus dados, e caso encontre algum erro por favor corrija antes de enviar."
-    )
-
-    # Chamada para função de entrada de dados
-    input_user_rg()
+    # Se os dados do OCR estão disponíveis e o flag show_form for True, mostra o formulário
+    if st.session_state.get("form_submitted") and st.session_state.get("show_form"):
+        filtered_data = {
+            key: st.session_state["ocr_data"][key]
+            for key in [
+                "nome",
+                "rg",
+                "cpf",
+                "data_nascimento",
+            ]
+            if key in st.session_state["ocr_data"]
+        }
+        input_user_rg(**filtered_data)
 
 
 def Instrucoes():
@@ -166,21 +168,26 @@ def Instrucoes():
     st.session_state.selected_document = selected
 
     if selected == "CNH":
-        if st.button("Upload Photo"):
-            st.session_state.upload_mode = "upload_photo"
-        elif st.button("Manual Input"):
-            st.session_state.upload_mode = "manual_input"
+        if st.button("Carregar foto da CNH"):
+            st.session_state.upload_mode = "upload_cnh"
+        elif st.button("Digite manualmente seus dados"):
+            st.session_state.upload_mode = "manual_input_cnh"
 
     elif selected == "RG":
-        st.session_state.upload_mode = "upload_rg"
+        if st.button("Carregar foto do RG"):
+            st.session_state.upload_mode = "upload_rg"
+        elif st.button("Digite manualmente seus dados"):
+            st.session_state.upload_mode = "manual_input_rg"
 
     # Execute functions based on session state
-    if st.session_state.upload_mode == "upload_photo":
+    if st.session_state.upload_mode == "upload_cnh":
         UploadCNH()
-    elif st.session_state.upload_mode == "manual_input":
+    elif st.session_state.upload_mode == "manual_input_cnh":
         input_user_cnh()
     elif st.session_state.upload_mode == "upload_rg":
         UploadRG()
+    elif st.session_state.upload_mode == "manual_input_rg":
+        input_user_rg()
 
     # Reset the upload mode if the user goes back to choose document type
     if st.session_state.selected_document == "Escolha":
