@@ -25,7 +25,6 @@ def connect_to_postgresql():
         st.error(f"Erro ao conectar ao banco de dados: {error}")
         return None
 
-
 conn = connect_to_postgresql()
 
 
@@ -33,7 +32,7 @@ def insert_user(email, username, password):
     try:
         cursor = conn.cursor()
 
-        date_joined = datetime.datetime.now()
+        date_joined = datetime.now()
 
         hashed_password = hash_password(password)
 
@@ -64,7 +63,7 @@ def insert_user_cnh(json_data):
         cursor = conn.cursor()
 
         insert_query = """
-            INSERT INTO doc_cnh (name, cpf_number, rg_number, place, birthdate, registration_number, validator_number)
+            INSERT INTO doc_cnh (name, cpf_number, rg_number, uf, birthdate, registration_number, validator_number)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
 
