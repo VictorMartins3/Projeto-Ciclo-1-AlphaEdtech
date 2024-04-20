@@ -58,16 +58,18 @@ def UploadCNH():
     # Se os dados do OCR estão disponíveis e o flag show_form for True, mostra o formulário
     if st.session_state.get("form_submitted") and st.session_state.get("show_form"):
         filtered_data = {
-            key: st.session_state["ocr_data"][key]
+            key if key != "data de nascimento" else "data_nascimento": st.session_state[
+                "ocr_data"
+            ][key]
             for key in [
                 "nome",
                 "rg",
                 "emissor",
                 "uf",
                 "cpf",
-                "data_nascimento",
+                "data de nascimento",
                 "registro",
-                "autenticacao",
+                "verificador",
             ]
             if key in st.session_state["ocr_data"]
         }
@@ -116,12 +118,14 @@ def UploadRG():
     # Se os dados do OCR estão disponíveis e o flag show_form for True, mostra o formulário
     if st.session_state.get("form_submitted") and st.session_state.get("show_form"):
         filtered_data = {
-            key: st.session_state["ocr_data"][key]
+            key if key != "data de nascimento" else "data_nascimento": st.session_state[
+                "ocr_data"
+            ][key]
             for key in [
                 "nome",
                 "rg",
                 "cpf",
-                "data_nascimento",
+                "data de nascimento",  # Nome conforme vem do OCR
             ]
             if key in st.session_state["ocr_data"]
         }

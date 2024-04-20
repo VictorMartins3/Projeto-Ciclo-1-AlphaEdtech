@@ -273,7 +273,7 @@ def input_user_cnh(
     cpf=None,
     data_nascimento=None,
     registro=None,
-    autenticacao=None,
+    verificador=None,
 ):
 
     with st.form(key="dados", clear_on_submit=True):
@@ -294,13 +294,13 @@ def input_user_cnh(
             help="Exemplo: 1234567",
         )
         numero_validador = st.text_input(
-            ":green_car[Numero validador da CNH]",
-            value=autenticacao,
+            ":green_car[Número validador da CNH]",
+            value=verificador,
             placeholder="Digite o número validador da CNH",
             help="Números na posição vertical",
         )
         numero_registro = st.text_input(
-            ":green_car[Numero de Registro da CNH]",
+            ":green_car[Número de Registro da CNH]",
             value=registro,
             placeholder="Digite o número de Registro da CNH",
             help="Número de Registro",
@@ -317,11 +317,19 @@ def input_user_cnh(
             placeholder="Digite a UF",
             help="Siglas do estado em que a CNH foi emitida.",
         )
-        data_nascimento = st.text_input(
-            ":green_car[Data de nascimento]",
-            value=data_nascimento,
-            placeholder="DD/MM/YYYY",
-        )
+        # Alternativa para exibir o calendário
+        if data_nascimento != None:
+            data_nascimento = st.text_input(
+                ":green_car[Data de nascimento]",
+                value=data_nascimento,
+                placeholder="DD/MM/YYYY",
+            )
+
+        else:
+            data_nascimento = st.date_input(
+                ":green_car[Data de nascimento]", value=None, format="DD/MM/YYYY"
+            )
+
         enviar_dados = st.form_submit_button("Enviar")
         if enviar_dados:
             if nome and validate_name(nome):
@@ -389,11 +397,18 @@ def input_user_rg(
             help="Exemplo: 123.456.789-10",
         )
 
-        data_nascimento = st.text_input(
-            ":green_car[Data de nascimento]",
-            value=data_nascimento,
-            placeholder="DD/MM/YYYY",
-        )
+        # Alternativa para exibir o calendário
+        if data_nascimento != None:
+            data_nascimento = st.text_input(
+                ":green_car[Data de nascimento]",
+                value=data_nascimento,
+                placeholder="DD/MM/YYYY",
+            )
+
+        else:
+            data_nascimento = st.date_input(
+                ":green_car[Data de nascimento]", value=None, format="DD/MM/YYYY"
+            )
 
         enviar_dados = st.form_submit_button("Enviar")
         if enviar_dados:
@@ -422,43 +437,3 @@ def input_user_rg(
                     st.warning("Insira um CPF válido.")
             else:
                 st.warning("Insira um nome válido.")
-
-    #     enviar_dados = st.form_submit_button("Enviar")
-    #     postgres_date = data_nascimento.strftime("%Y-%m-%d")
-    #     postgres_date_emissao = data_emissao.strftime("%Y-%m-%d")
-
-    # if enviar_dados:
-    #     if nome and validate_name(nome):
-    #         if cpf and validate_cpf(cpf):
-    #             if rg:
-    #                 if cpf and len(cpf) > 2:
-    #                     if cpf:
-    #                         if data_nascimento:
-    #                             dados = {
-    #                                 "name": nome,
-    #                                 "cpf_number": cpf,
-    #                                 "rg_number": rg,
-    #                                 "emission_date": postgres_date_emissao,
-    #                                 "birthdate": postgres_date,
-    #                             }
-    #                             # Converta o dicionário para uma string JSON
-    #                             dados_json = json.dumps(dados)
-    #                             insert_user_rg(dados_json)
-    #                             print(dados)
-    #                             st.write(dados)
-    #                         else:
-    #                             st.warning("Insira a data de nascimento.")
-    #                     else:
-    #                         st.warning("Insira o orgão emissor.")
-    #                 else:
-    #                     st.warning("A UF deve ter dois dígitos.")
-    #             else:
-    #                 st.warning("Insira um RG válido.")
-    #         else:
-    #             st.warning("Insira um CPF válido.")
-    #     else:
-    #         st.warning("Insira um nome válido.")
-
-
-# Executa a página de cadastro
-# sign_up()
