@@ -27,7 +27,6 @@ def connect_to_postgresql():
 
 conn = connect_to_postgresql()
 
-
 def insert_user(email, username, password):
     try:
         cursor = conn.cursor()
@@ -57,14 +56,20 @@ def insert_user(email, username, password):
     except (Exception, psycopg2.DatabaseError) as error:
         st.error(f"Erro ao inserir usuário: {error}")
 
+def search_user_id():
+    cursor = conn.cursor()
+    cursor.execute("SELECT id_user FROM users WHERE username = %s", (st.session_state.user,))
+    user_id = cursor.fetchone()
 
+    cursor.close()
+    return user_id
 def insert_user_cnh(json_data):
     try:
         cursor = conn.cursor()
 
         insert_query = """
-            INSERT INTO doc_cnh (name, cpf_number, rg_number, uf, birthdate, registration_number, validator_number)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO doc_cnh (name, cpf_number, rg_number, uf, birthdate, registration_number, validator_number, id_user)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
 
         data = json.loads(json_data)
@@ -79,6 +84,7 @@ def insert_user_cnh(json_data):
                 data["birthdate"],
                 data["registration_number"],
                 data["validator_number"],
+                st.session_state.id_user,
             ),
         )
 
@@ -96,8 +102,8 @@ def insert_user_rg(json_data):
         cursor = conn.cursor()
 
         insert_query = """
-            INSERT INTO doc_rg (name, rg_number, cpf_number, birthdate)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO doc_rg (name, rg_number, cpf_number, birthdate, id_user)
+            VALUES (%s, %s, %s, %s, %s)
         """
 
         data = json.loads(json_data)
@@ -109,6 +115,7 @@ def insert_user_rg(json_data):
                 data["rg_number"],
                 data["cpf_number"],
                 data["birthdate"],
+                st.session_state.id_user,
             ),
         )
 
@@ -170,7 +177,25 @@ def get_usernames():
         st.error(f"Erro ao obter usernames dos usuários: {error}")
         return []
 
+def verify_user(doc):
+    cursor = conn.cursor()
 
+    if doc == "cnh":
+        cursor.execute("SELECT id_user FROM doc_cnh WHERE id_user = %s", (st.session_state.id_user,))
+        usernames = cursor.fetchall()
+        cursor.close()
+        if usernames:
+            return True
+        else:
+            return False
+    elif doc == "rg":
+        cursor.execute("SELECT id_user FROM doc_cnh WHERE id_user = %s", (st.session_state.id_user,))
+        usernames = cursor.fetchall()
+        cursor.close()
+        if usernames:
+            return True
+        else:
+            return False
 def validate_email(email):
     pattern = r"^[a-zA-Z0-9-_]+@[a-zA-Z0-9]+\.[a-z]{1,3}$"
     return re.match(pattern, email)

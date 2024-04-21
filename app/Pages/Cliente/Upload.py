@@ -3,6 +3,7 @@ import os
 from PIL import Image
 from dependancies import input_user_cnh
 from dependancies import input_user_rg
+from dependancies import verify_user
 import sys
 
 # Adicionando o caminho para importação dos módulos do projeto
@@ -14,7 +15,6 @@ from services.preprocessing import *
 from services.ocr_service import *
 from services.cnh_detection import cnh_detection
 from services.rg_detection import rg_detection
-
 
 def UploadCNH():
     if "form_submitted" not in st.session_state:
@@ -185,13 +185,26 @@ def Instrucoes():
 
     # Execute functions based on session state
     if st.session_state.upload_mode == "upload_cnh":
-        UploadCNH()
+        print(verify_user("cnh"))
+        if verify_user("cnh"):
+            print("Hello")
+        else:
+            UploadCNH()
     elif st.session_state.upload_mode == "manual_input_cnh":
-        input_user_cnh()
+        if verify_user("cnh"):
+            print("Hello")
+        else:
+            input_user_cnh()
     elif st.session_state.upload_mode == "upload_rg":
-        UploadRG()
+        if verify_user("rg"):
+            print("Hello")
+        else:
+            UploadRG()
     elif st.session_state.upload_mode == "manual_input_rg":
-        input_user_rg()
+        if verify_user("rg"):
+            print("Hello")
+        else:
+            input_user_rg()
 
     # Reset the upload mode if the user goes back to choose document type
     if st.session_state.selected_document == "Escolha":
