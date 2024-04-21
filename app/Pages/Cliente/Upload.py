@@ -7,14 +7,15 @@ from dependancies import verify_user
 from dependancies import input_update_user_cnh, input_update_user_rg
 from dependancies import pull_data
 import sys
+import numpy as np
 
 # Adicionando o caminho para importação dos módulos do projeto
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 )
 
-from services.preprocessing import *
-from services.ocr_service import *
+from services.preprocessing import preprocess
+from services.ocr_service import ocr
 from services.cnh_detection import cnh_detection
 from services.rg_detection import rg_detection
 
