@@ -16,7 +16,7 @@ def MostraCarteira():
     selected = st.selectbox("Selecione o documento que você deseja visualizar", document_options)
     
     dados_rg = ["Nome", "CPF", "RG", "Data de nascimento"]
-    dados_cnh = ["Nome", "CPF", "RG", "UF", "Data de nascimento", "Número do registro", "Número verifiador"]
+    dados_cnh = ["Nome", "CPF", "RG", "Orgão Emissor", "UF", "Data de nascimento", "Número do registro", "Número verifiador"]
     i = 0
     
     st.write(" ")
