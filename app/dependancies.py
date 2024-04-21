@@ -730,3 +730,17 @@ def input_update_user_rg(
                     st.warning("Insira um CPF válido.")
             else:
                 st.warning("Insira um nome válido.")
+
+def delete_data(doc):
+    try:
+        cursor = conn.cursor()
+        if doc == "cnh":
+            cursor.execute("DELETE FROM doc_cnh WHERE id_user = %s", (st.session_state.id_user,))
+        elif doc == "rg":
+            cursor.execute("DELETE FROM doc_rg WHERE id_user = %s", (st.session_state.id_user,))
+        conn.commit()
+        cursor.close()
+        return True
+    except (Exception, psycopg2.DatabaseError) as error:
+        st.error(f"Erro ao deletar dados: {error}")
+        return False

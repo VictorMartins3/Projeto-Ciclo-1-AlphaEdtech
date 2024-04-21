@@ -1,5 +1,5 @@
 ﻿import streamlit as st
-from dependancies import verify_user, pull_data
+from dependancies import verify_user, pull_data, delete_data
 
 def MostraCarteira():
 
@@ -29,6 +29,16 @@ def MostraCarteira():
                 for key, value in data.items():
                     st.write(f"{dados_cnh[i]}: {value}")
                     i += 1
+            st.write(" ")
+            st.write(" ")
+            
+            delete_cnh = st.button("Deletar Documento", key='delete cnh', help='Ao clicar você irá deletar os dados do documento salvo.', type="primary")
+            if delete_cnh:
+                try:
+                    delete_data("cnh")
+                    st.success("Seus dados foram excluídos com sucesso. Por favor recarregue a página.")
+                except Exception as e:
+                    st.write(f"Erro: {e}")
         else:
             st.warning(
                     "Você não possui CNH cadastrada. Por favor, faça upload de sua CNH e tente novamente."
@@ -41,6 +51,13 @@ def MostraCarteira():
                 for key, value in data.items():
                     st.write(f"{dados_rg[i]}: {value}")
                     i += 1
+            delete_rg = st.button("Deletar Documento", key='delete rg', help='Ao clicar você irá deletar os dados do documento salvo.', type="primary")
+            if delete_rg:
+                try:
+                    delete_data("rg")
+                    st.success("Seus dados foram excluídos com sucesso. Por favor recarregue a página.")
+                except Exception as e:
+                    st.write(f"Erro: {e}")
         else:
             st.warning(
                     "Você não possui RG cadastrado. Por favor, faça upload do seu RG e tente novamente."
