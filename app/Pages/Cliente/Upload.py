@@ -4,6 +4,8 @@ from PIL import Image
 from dependancies import input_user_cnh
 from dependancies import input_user_rg
 from dependancies import verify_user
+from dependancies import input_update_user_cnh, input_update_user_rg
+from dependancies import pull_data
 import sys
 
 # Adicionando o caminho para importação dos módulos do projeto
@@ -162,7 +164,8 @@ def Instrucoes():
         st.session_state.selected_document = "Escolha"
     if "upload_mode" not in st.session_state:
         st.session_state.upload_mode = None  # This will control which section to show
-
+    if "update_data" not in st.session_state:
+        st.session_state.update_data = None
     document_options = ["Escolha", "CNH", "RG"]
     selected = st.selectbox(
         "Selecione qual documento você deseja adicionar:",
@@ -172,40 +175,48 @@ def Instrucoes():
     st.session_state.selected_document = selected
 
     if selected == "CNH":
-        if st.button("Carregar foto da CNH"):
-            st.session_state.upload_mode = "upload_cnh"
-        elif st.button("Digite manualmente seus dados"):
-            st.session_state.upload_mode = "manual_input_cnh"
+        if verify_user("cnh"):
+            if st.button("Atualizar dados CNH"):
+                st.session_state.update_data = "update_cnh"
+        else:
+            if st.button("Carregar foto da CNH"):
+                st.session_state.upload_mode = "upload_cnh"
+            elif st.button("Digite manualmente seus dados"):
+                st.session_state.upload_mode = "manual_input_cnh"
 
     elif selected == "RG":
-        if st.button("Carregar foto do RG"):
-            st.session_state.upload_mode = "upload_rg"
-        elif st.button("Digite manualmente seus dados"):
-            st.session_state.upload_mode = "manual_input_rg"
+        if verify_user("rg"):
+            if st.button("Atualizar dados RG"):
+                st.session_state.update_data = "update_rg"
+        else:
+            if st.button("Carregar foto do RG"):
+                st.session_state.upload_mode = "upload_rg"
+            elif st.button("Digite manualmente seus dados"):
+                st.session_state.upload_mode = "manual_input_rg"
 
     # Execute functions based on session state
     if st.session_state.upload_mode == "upload_cnh":
-        print(verify_user("cnh"))
-        if verify_user("cnh"):
-            print("Hello")
-        else:
-            UploadCNH()
+        UploadCNH()
     elif st.session_state.upload_mode == "manual_input_cnh":
-        if verify_user("cnh"):
-            print("Hello")
-        else:
-            input_user_cnh()
+        input_user_cnh()
     elif st.session_state.upload_mode == "upload_rg":
-        if verify_user("rg"):
-            print("Hello")
-        else:
-            UploadRG()
+        UploadRG()
     elif st.session_state.upload_mode == "manual_input_rg":
-        if verify_user("rg"):
-            print("Hello")
-        else:
-            input_user_rg()
+        input_user_rg()
+
+    # Check for CNH update separately
+    if st.session_state.update_data == "update_cnh":
+        data = pull_data("cnh")
+        print(data)
+        input_update_user_cnh(**data[0])
+    elif st.session_state.update_data == "update_rg":
+        data = pull_data("rg")
+        print(data)
+        input_update_user_rg(**data[0])
 
     # Reset the upload mode if the user goes back to choose document type
     if st.session_state.selected_document == "Escolha":
         st.session_state.upload_mode = None
+    if st.session_state.selected_document == "Escolha":
+        st.session_state.update_data = None
+
