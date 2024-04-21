@@ -103,7 +103,7 @@ def insert_user_cnh(json_data):
 
 def insert_user_rg(json_data):
     try:
-        if verify_user("rg"):
+        if not verify_user("rg"):
             cursor = conn.cursor()
 
             insert_query = """
