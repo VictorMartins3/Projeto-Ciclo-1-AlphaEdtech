@@ -76,7 +76,7 @@ page = st.session_state.page
 # Agora, quando você muda o tema, a página não será recarregada para o estado inicial
 if not ms.themes["refreshed"]:
     ms.themes["refreshed"] = True
-    # Não chame st.rerun() aqui
+    st.rerun()
 
 
 try:
