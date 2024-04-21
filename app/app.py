@@ -9,7 +9,7 @@ from Pages.Cliente.Inicio import InicioCliente
 from Pages.Adm.Administrador import InicioAdministrador
 
 
-st.set_page_config(page_title="App", page_icon="🐍", layout='centered', initial_sidebar_state="expanded")
+st.set_page_config(page_title="CloudDoc", page_icon="🐍", layout='centered', initial_sidebar_state="expanded")
 
 with open(r"app\style.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
@@ -76,7 +76,7 @@ page = st.session_state.page
 # Agora, quando você muda o tema, a página não será recarregada para o estado inicial
 if not ms.themes["refreshed"]:
     ms.themes["refreshed"] = True
-    # Não chame st.rerun() aqui
+    st.rerun()
 
 
 try:
@@ -97,7 +97,7 @@ try:
         }
 
     Authenticator = stauth.Authenticate(
-        credentials, cookie_name="dqwdq", key="abcdef", cookie_expiry_days=4
+        credentials, cookie_name="CloudDoc", key="abcdef", cookie_expiry_days=4
     )
 
     email, authentication_status, username = Authenticator.login(

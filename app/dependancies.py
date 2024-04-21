@@ -131,7 +131,6 @@ def insert_user_rg(json_data):
 def update_user_cnh(json_data):
     try:
         cursor = conn.cursor()
-        print("topgun")
         update_query = """
             UPDATE doc_cnh
             SET name = %s,
@@ -177,7 +176,7 @@ def update_user_rg(json_data):
         UPDATE doc_cnh
         SET name = %s,
             cpf_number = %s,
-            birthdate = %s
+            birthdate = %s,
             rg_number = %s
         WHERE id_user = %s
     """
@@ -477,7 +476,6 @@ def input_user_cnh(
                                     }
                                     dados_json = json.dumps(dados)
                                     insert_user_cnh(dados_json)
-                                    st.write(dados)
                                 else:
                                     st.warning("Insira a data de nascimento.")
                             else:
@@ -540,7 +538,6 @@ def input_user_rg(
                             data_nascimento_obj = datetime.strptime(
                                 data_nascimento, "%d/%m/%Y"
                             )
-                            print("Pai")
                             postgres_date = data_nascimento_obj.strftime("%Y-%m-%d")
                             dados = {
                                 "name": nome,
@@ -569,7 +566,7 @@ def input_update_user_cnh(
     registro=None,
     verificador=None,
 ):
-    print("gay")
+
     with st.form(key="dados", clear_on_submit=True):
         st.subheader(":green_car[Dados CNH]")  # Correção do emoji
         nome = st.text_input(
@@ -642,9 +639,7 @@ def input_update_user_cnh(
                                         "birthdate": data_nascimento,
                                         "rg_number": rg,
                                     }
-                                    print("SERA QUE NAO")
-                                    dados_json = json.dumps(dados)
-                                    
+                                    dados_json = json.dumps(dados)                                    
                                     update_user_cnh(dados_json)
                                 else:
                                     st.warning("Insira a data de nascimento.")
@@ -658,8 +653,6 @@ def input_update_user_cnh(
                     st.warning("Número inválido.")
             else:
                 st.warning("Insira um nome válido.")
-
-
 def input_update_user_rg(
     nome=None,
     rg=None,
