@@ -65,66 +65,73 @@ def search_user_id():
     return user_id
 def insert_user_cnh(json_data):
     try:
-        cursor = conn.cursor()
+        if not verify_user("cnh"):
+            cursor = conn.cursor()
 
-        insert_query = """
-            INSERT INTO doc_cnh (name, cpf_number, rg_number, uf, birthdate, registration_number, validator_number, id_user)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        """
+            insert_query = """
+                INSERT INTO doc_cnh (name, cpf_number, rg_number, issuing_body, uf, birthdate, registration_number, validator_number, id_user)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
 
-        data = json.loads(json_data)
+            data = json.loads(json_data)
 
-        cursor.execute(
-            insert_query,
-            (
-                data["name"],
-                data["cpf_number"],
-                data["rg_number"],
-                data["uf"],
-                data["birthdate"],
-                data["registration_number"],
-                data["validator_number"],
-                st.session_state.id_user,
-            ),
-        )
+            cursor.execute(
+                insert_query,
+                (
+                    data["name"],
+                    data["cpf_number"],
+                    data["rg_number"],
+                    data["issuing_body"],
+                    data["uf"],
+                    data["birthdate"],
+                    data["registration_number"],
+                    data["validator_number"],
+                    st.session_state.id_user,
+                ),
+            )
 
-        conn.commit()
+            conn.commit()
 
-        cursor.close()
-        st.success("Dados inseridos com sucesso!")
-        st.balloons()
+            cursor.close()
+            st.success("Dados inseridos com sucesso!")
+            st.balloons()
+        else:
+            st.warning("Você já possui um documento de CNH na sua carteira.")
     except (Exception, psycopg2.DatabaseError) as error:
         st.error(f"Erro ao inserir dados: {error}")
 
 
 def insert_user_rg(json_data):
     try:
-        cursor = conn.cursor()
+        if verify_user("rg"):
+            cursor = conn.cursor()
 
-        insert_query = """
-            INSERT INTO doc_rg (name, rg_number, cpf_number, birthdate, id_user)
-            VALUES (%s, %s, %s, %s, %s)
-        """
+            insert_query = """
+                INSERT INTO doc_rg (name, rg_number, cpf_number, birthdate, id_user)
+                VALUES (%s, %s, %s, %s, %s)
+            """
 
-        data = json.loads(json_data)
+            data = json.loads(json_data)
 
-        cursor.execute(
-            insert_query,
-            (
-                data["name"],
-                data["rg_number"],
-                data["cpf_number"],
-                data["birthdate"],
-                st.session_state.id_user,
-            ),
-        )
+            cursor.execute(
+                insert_query,
+                (
+                    data["name"],
+                    data["rg_number"],
+                    data["cpf_number"],
+                    data["birthdate"],
+                    st.session_state.id_user,
+                ),
+            )
 
-        conn.commit()
+            conn.commit()
 
-        cursor.close()
+            cursor.close()
 
-        st.success("Dados inseridos com sucesso!")
-        st.balloons()
+            st.success("Dados inseridos com sucesso!")
+            st.balloons()
+        else:
+            st.warning("Você já possui um documento de RG na sua carteira.")
     except (Exception, psycopg2.DatabaseError) as error:
         st.error(f"Erro ao inserir dados: {error}")
 
@@ -136,6 +143,7 @@ def update_user_cnh(json_data):
             SET name = %s,
                 cpf_number = %s,
                 rg_number = %s,
+                issuing_body %s,
                 uf = %s,
                 birthdate = %s,
                 registration_number = %s,
@@ -151,6 +159,7 @@ def update_user_cnh(json_data):
                 data["name"],
                 data["cpf_number"],
                 data["rg_number"],
+                data["issuing_body"],
                 data["uf"],
                 data["birthdate"],
                 data["registration_number"],
@@ -299,11 +308,11 @@ def pull_data(doc):
         cursor = conn.cursor()
         data_list = []
         if doc == "cnh":
-            cursor.execute("SELECT name, cpf_number, rg_number, uf, birthdate, registration_number, validator_number FROM doc_cnh WHERE id_user = %s", (st.session_state.id_user,))
+            cursor.execute("SELECT name, cpf_number, rg_number, issuing_body, uf, birthdate, registration_number, validator_number FROM doc_cnh WHERE id_user = %s", (st.session_state.id_user,))
             data = cursor.fetchall()
 
-            for name, cpf_number, rg_number, uf, birthdate, registration_number, validator_number in data:
-                data_list.append({"nome": name, "cpf": cpf_number, "rg": rg_number, "uf": uf, 
+            for name, cpf_number, rg_number, issuing_body, uf, birthdate, registration_number, validator_number in data:
+                data_list.append({"nome": name, "cpf": cpf_number, "rg": rg_number, "emissor": issuing_body, "uf": uf, 
                               "data_nascimento": birthdate, "registro": registration_number, "verificador": validator_number})
         elif doc == "rg":
             cursor.execute("SELECT name, cpf_number, rg_number, birthdate FROM doc_rg WHERE id_user = %s", (st.session_state.id_user,))
@@ -446,9 +455,12 @@ def input_user_cnh(
             )
 
         else:
-            data_nascimento = st.date_input(
-                ":green_car[Data de nascimento]", value=None, format="DD/MM/YYYY"
-            )
+            data_nascimento = st.text_input(
+            ":green_car[Data De nascimento]",
+            value=data_nascimento,
+            placeholder="DD/MM/YYYY",
+            help="Sua data de nascimento.",
+        )
 
         enviar_dados = st.form_submit_button("Enviar")
         if enviar_dados:
@@ -469,7 +481,7 @@ def input_user_cnh(
                                         "cpf_number": cpf,
                                         "validator_number": numero_validador,
                                         "registration_number": numero_registro,
-                                        "org_emissor": org_emissor,
+                                        "issuing_body": org_emissor,
                                         "uf": uf,
                                         "birthdate": postgres_date,
                                         "rg_number": rg,
@@ -525,9 +537,12 @@ def input_user_rg(
             )
 
         else:
-            data_nascimento = st.date_input(
-                ":green_car[Data de nascimento]", value=None, format="DD/MM/YYYY"
-            )
+            data_nascimento = st.text_input(
+            ":green_car[Data De nascimento]",
+            value=data_nascimento,
+            placeholder="DD/MM/YYYY",
+            help="Sua data de nascimento.",
+        )   
 
         enviar_dados = st.form_submit_button("Enviar")
         if enviar_dados:
@@ -634,7 +649,7 @@ def input_update_user_cnh(
                                         "cpf_number": cpf,
                                         "validator_number": numero_validador,
                                         "registration_number": numero_registro,
-                                        "org_emissor": org_emissor,
+                                        "issuing_body": org_emissor,
                                         "uf": uf,
                                         "birthdate": data_nascimento,
                                         "rg_number": rg,
