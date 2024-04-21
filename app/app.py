@@ -2,6 +2,7 @@ import streamlit as st
 import streamlit_authenticator as stauth
 from dependancies import sign_up
 from dependancies import fetch_users
+from dependancies import search_user_id
 from Pages.Cliente.Upload import Instrucoes
 from Pages.Cliente.Carteira import MostraCarteira
 from Pages.Cliente.Inicio import InicioCliente
@@ -96,7 +97,7 @@ try:
         }
 
     Authenticator = stauth.Authenticate(
-        credentials, cookie_name="App", key="abcdef", cookie_expiry_days=4
+        credentials, cookie_name="dqwdq", key="abcdef", cookie_expiry_days=4
     )
 
     email, authentication_status, username = Authenticator.login(
@@ -118,6 +119,8 @@ try:
                     InicioAdministrador()
                 else:                    
                     st.sidebar.subheader(f"Bem vindo {username}")
+                    st.session_state.user = username 
+                    st.session_state.id_user = search_user_id()
                     with st.sidebar:
                         pagina_selecionada = st.selectbox(
                             "Selecione uma página",
