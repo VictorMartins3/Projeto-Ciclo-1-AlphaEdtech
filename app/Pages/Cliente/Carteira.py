@@ -25,7 +25,7 @@ def MostraCarteira():
     if selected == "CNH":
         if verify_user("cnh"):
             data = pull_data("cnh")[0]
-            with st.container(height=310):
+            with st.container(height=350):
                 for key, value in data.items():
                     st.write(f"{dados_cnh[i]}: {value}")
                     i += 1

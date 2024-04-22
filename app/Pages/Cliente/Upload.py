@@ -208,11 +208,9 @@ def Instrucoes():
     # Check for CNH update separately
     if st.session_state.update_data == "update_cnh":
         data = pull_data("cnh")
-        print(data)
         input_update_user_cnh(**data[0])
     elif st.session_state.update_data == "update_rg":
         data = pull_data("rg")
-        print(data)
         input_update_user_rg(**data[0])
 
     # Reset the upload mode if the user goes back to choose document type

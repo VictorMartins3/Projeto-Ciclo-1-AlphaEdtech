@@ -674,7 +674,6 @@ def input_update_user_rg(
     cpf=None,
     data_nascimento=None,
 ):
-
     with st.form(key="dados", clear_on_submit=True):
         st.subheader(":green_car[Dados RG]")
         nome = st.text_input(
@@ -721,7 +720,6 @@ def input_update_user_rg(
                             }
                             dados_json = json.dumps(dados)
                             update_user_rg(dados_json)
-                            st.write(dados)
                         else:
                             st.warning("Insira a data de nascimento.")
                     else:
