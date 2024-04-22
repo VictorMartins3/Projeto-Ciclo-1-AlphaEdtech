@@ -79,8 +79,8 @@ def ChangeTheme():
     elif previous_theme == "light":
         ms.themes["current_theme"] = "dark"
 
-logo = Image.open(r"app/imagens/logoCloud.png")
-new_size_logo = (150, 150)
+logo = Image.open(r"app\imagens\logoCloudDoc.png")
+new_size_logo = (100, 100)
 image_logo = logo.resize(new_size_logo)
 
 # Verifica o estado atual do tema para definir o valor inicial do toggle
@@ -145,10 +145,11 @@ try:
                     Authenticator.logout("Sair", "sidebar")
                     InicioAdministrador()
                 else:
-                    st.sidebar.image(image_logo, use_column_width=False)           
+                    st.sidebar.image(image_logo, use_column_width=False)
                     st.sidebar.subheader(f"Bem vindo {username}")
                     st.session_state.user = username 
                     st.session_state.id_user = search_user_id()
+                    
                     with st.sidebar:
                         pagina_selecionada = st.selectbox(
                             "Selecione uma página",
