@@ -1,0 +1,73 @@
+﻿.stform_submit_button > button {
+    color: #FFFFFF;
+    background-color: red;
+    font-size: 20px;
+    height: 60px;
+    width: 100%;
+}
+
+.stButton > button {
+    color: #FFFFFF;
+    background-color: green;
+    font-size: 20px;
+    height: 20px;
+    width: 100%;
+}
+
+.stMarkdownContainer > button{
+    color: #FFFFFF;
+    background-color: red;
+    font-size: 20px;
+    height: 60px;
+    width: 100%;
+}
+
+#MainMenu{
+    display: none;
+}
+
+.stDeployButton > button{
+    display: none;
+}
+
+#login{
+    text-align: center;
+}
+
+#cadastrar{
+    text-align: center;
+}
+
+#upload-de-arquivos{
+    text-align: center;
+}
+
+.change_tema{
+    color: #FFFFFF;
+    background-color: white;
+    border-color: whitesmoke;
+    font-size: 20px;
+    height: 20px;
+    width: 100%;
+}
+
+#seja-bem-vindo{
+    text-align: center;
+}
+
+
+#stHeading{
+    text-align: center;
+}
+
+#MainMenu{
+    text-align: center;
+}
+
+#dados-cnh{
+    text-align: center;
+}
+
+#dados-rg{
+    text-align: center;
+}
