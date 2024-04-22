@@ -1,6 +1,7 @@
 ﻿import streamlit as st
 from dependancies import verify_user, pull_data, delete_data
 
+
 def MostraCarteira():
 
     st.subheader('Minha carteira')

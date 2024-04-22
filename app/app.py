@@ -1,5 +1,6 @@
 import streamlit as st
 import streamlit_authenticator as stauth
+from PIL import Image
 from dependancies import sign_up
 from dependancies import fetch_users
 from dependancies import search_user_id
@@ -9,10 +10,33 @@ from Pages.Cliente.Inicio import InicioCliente
 from Pages.Adm.Administrador import InicioAdministrador
 
 
-st.set_page_config(page_title="CloudDoc", page_icon="🐍", layout='centered', initial_sidebar_state="expanded")
+st.set_page_config(page_title="CloudDoc", page_icon="☁️", layout='centered', initial_sidebar_state="expanded")
 
 with open(r"app\style.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+def add_logo():
+    st.markdown(
+        """
+        <style>
+            [data-testid="stSidebarNav"] {
+                background-image: url(https://i.imgur.com/De2a2eu.jpeg);
+                background-repeat: no-repeat;
+                padding-top: 120px;
+                background-position: 20px 20px;
+            }
+            [data-testid="stSidebarNav"]::before {
+                content: "My Company Name";
+                margin-left: 20px;
+                margin-top: 20px;
+                font-size: 30px;
+                position: relative;
+                top: 100px;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 ms = st.session_state
 if "themes" not in ms:
@@ -55,6 +79,9 @@ def ChangeTheme():
     elif previous_theme == "light":
         ms.themes["current_theme"] = "dark"
 
+logo = Image.open(r"app/imagens/logoCloud.png")
+new_size_logo = (150, 150)
+image_logo = logo.resize(new_size_logo)
 
 # Verifica o estado atual do tema para definir o valor inicial do toggle
 current_theme_status = ms.themes["current_theme"] == "dark"
@@ -117,7 +144,8 @@ try:
                     st.sidebar.subheader("Modo administrador")
                     Authenticator.logout("Sair", "sidebar")
                     InicioAdministrador()
-                else:                    
+                else:
+                    st.sidebar.image(image_logo, use_column_width=False)           
                     st.sidebar.subheader(f"Bem vindo {username}")
                     st.session_state.user = username 
                     st.session_state.id_user = search_user_id()
