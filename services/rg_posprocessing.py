@@ -9,7 +9,7 @@ def valida_nome_rg(imagem, top_left, w, h, texto):
     quantidade_nomes = len(partes)
     # Verifica se tem mais de um nome
     if quantidade_nomes > 2:
-        return texto 
+        return texto.upper() 
     elif quantidade_nomes == 2:
         nova_roi = imagem[
             top_left[1] - 10 : top_left[1] + h + 10, top_left[0] : top_left[0] + 3 * w
@@ -22,7 +22,7 @@ def valida_nome_rg(imagem, top_left, w, h, texto):
     nome_completo = " ".join(
         [nome for _, nome, confianca in resultado_nome if confianca > 0.3]
     )
-    return nome_completo
+    return nome_completo.upper()
 
 
 def valida_rg(imagem, top_left, w, h, texto):
@@ -47,7 +47,7 @@ def valida_rg(imagem, top_left, w, h, texto):
 def valida_cpf_rg(imagem, top_left, w, h, n_cpf):
     tamanho = len("".join(char for char in n_cpf if char.isdigit()))
     if tamanho == 11:
-        return n_cpf.replace(" ", "").replace("/","-").replace(",", ".")
+        return formatar_cpf(n_cpf)
     else:
         nova_roi = imagem[
             top_left[1] - 10 : top_left[1] + h + 10, top_left[0] - 100 : top_left[0] + 300
@@ -56,8 +56,16 @@ def valida_cpf_rg(imagem, top_left, w, h, n_cpf):
         cpf_completo = ".".join(
             [digito for _, digito, confianca in resultado_cpf if confianca > 0.3]
         )
-        cpf_completo = re.sub(r'[^0-9\.-]', '', cpf_completo)
-        return cpf_completo.replace(" ", "").replace(",", ".").replace("/", "-")
+        return formatar_cpf(cpf_completo) if len(cpf_completo) >= 11 else cpf_completo
+
+
+def formatar_cpf(cpf):
+    if re.match(r'^\d{3}\.\d{3}\.\d{3}-\d{2}$', cpf):
+        return cpf
+    else:
+        cpf_numeros = re.sub(r'\D', '', cpf)
+        cpf_formatado = '{}.{}.{}-{}'.format(cpf_numeros[:3], cpf_numeros[3:6], cpf_numeros[6:9], cpf_numeros[9:])
+        return cpf_formatado
 
 
 def valida_data_rg(imagem, top_left, w, h, data):

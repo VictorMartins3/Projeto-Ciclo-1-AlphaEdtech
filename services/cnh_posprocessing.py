@@ -1,4 +1,5 @@
 from services.ocr_service import ocr
+from services.rg_posprocessing import formatar_cpf
 import re
 
 def verificar_versao_cnh(results):
@@ -51,7 +52,7 @@ def valida_nome_cnh(imagem, top_left, w, h, texto):
     quantidade_nomes = len(partes)
     # Verifica se tem mais de um nome
     if quantidade_nomes > 2:
-        return texto  # teoricamente pegou o nome completo
+        return texto.upper()
     elif quantidade_nomes == 2:
         nova_roi = imagem[
             top_left[1] - 10 : top_left[1] + h + 10, top_left[0] : top_left[0] + 3 * w
@@ -64,7 +65,7 @@ def valida_nome_cnh(imagem, top_left, w, h, texto):
     nome_completo = " ".join(
         [nome for _, nome, _ in resultado_nome]
     )
-    return nome_completo
+    return nome_completo.upper()
 
 
 def valida_rg_cnh(imagem, top_left, w, h, texto):
@@ -91,7 +92,7 @@ def valida_rg_cnh(imagem, top_left, w, h, texto):
 def valida_cpf_cnh(imagem, top_left, w, h, n_cpf):
     tamanho = len("".join(char for char in n_cpf if char.isdigit()))
     if tamanho == 11:
-        return n_cpf.replace(" ", "").replace(",", ".")  # teoricamente pegou o cpf completo
+        return formatar_cpf(n_cpf)
     else:
         nova_roi = imagem[
             top_left[1] - 10 : top_left[1] + h + 10, top_left[0] : top_left[0] + 270
@@ -100,7 +101,7 @@ def valida_cpf_cnh(imagem, top_left, w, h, n_cpf):
         cpf_completo = ".".join(
             [digito for _, digito, confianca in resultado_cpf if confianca > 0.3]
         )
-        return cpf_completo.replace(" ", "").replace(",", ".")
+        return formatar_cpf(cpf_completo) if len(cpf_completo) >= 11 else cpf_completo
 
 def valida_data_cnh(imagem, top_left, w, h, data):
     pattern = r'^\d{2}/\d{2}/\d{4}$'
