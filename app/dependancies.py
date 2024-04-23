@@ -11,6 +11,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from config.connection import connect_to_postgresql
 from utils.validations import *
 from repo.users import get_user_emails, get_usernames, insert_user
+from repo.documents import update_user_cnh, update_user_rg
 
 # SQL queries:
 def insert_user_cnh(json_data):
@@ -77,77 +78,6 @@ def insert_user_rg(json_data):
                         st.warning("Você já possui um documento de RG na sua carteira.")
         except (Exception, psycopg2.DatabaseError) as error:
             st.error(f"Erro ao inserir dados: {error}")
-
-
-def update_user_cnh(json_data):
-    conn = connect_to_postgresql()
-    if conn:
-        try:
-            with conn:
-                with conn.cursor() as cursor:
-                    data = json.loads(json_data)
-                    update_query = """
-                        UPDATE doc_cnh
-                        SET name = %s,
-                            cpf_number = %s,
-                            rg_number = %s,
-                            issuing_body = %s,
-                            uf = %s,
-                            birthdate = %s,
-                            registration_number = %s,
-                            validator_number = %s
-                        WHERE id_user = %s
-                    """
-                    cursor.execute(
-                        update_query,
-                        (
-                            data["name"],
-                            data["cpf_number"],
-                            data["rg_number"],
-                            data["issuing_body"],
-                            data["uf"],
-                            data["birthdate"],
-                            data["registration_number"],
-                            data["validator_number"],
-                            st.session_state.id_user,
-                        ),
-                    )
-                    st.success("Dados da CNH atualizados com sucesso!")
-                    st.balloons()
-        except (Exception, psycopg2.DatabaseError) as error:
-            st.error(f"Erro ao atualizar dados: {error}")
-
-
-def update_user_rg(json_data):
-    conn = connect_to_postgresql()
-    if conn:
-        try:
-            with conn:
-                with conn.cursor() as cursor:
-                    data = json.loads(json_data)
-                    update_query = """
-                        UPDATE doc_rg
-                        SET name = %s,
-                            cpf_number = %s,
-                            birthdate = %s,
-                            rg_number = %s
-                        WHERE id_user = %s
-                    """
-                    cursor.execute(
-                        update_query,
-                        (
-                            data["name"],
-                            data["cpf_number"],
-                            data["birthdate"],
-                            data["rg_number"],
-                            st.session_state.id_user,
-                        ),
-                    )
-                    st.success("Dados do RG atualizados com sucesso!")
-                    st.balloons()
-        except (Exception, psycopg2.DatabaseError) as error:
-            st.error(f"Erro ao atualizar dados: {error}")
-
 
 def verify_user(doc_type):
     conn = connect_to_postgresql()
@@ -454,48 +384,48 @@ def input_user_rg(
 
 
 def input_update_user_cnh(
-    nome=None,
-    rg=None,
-    emissor=None,
+    name=None,
+    rg_number=None,
+    issuing_body=None,
     uf=None,
-    cpf=None,
-    data_nascimento=None,
-    registro=None,
-    verificador=None,
+    cpf_number=None,
+    birthdate=None,
+    registration_number=None,
+    validator_number=None,
 ):
 
     with st.form(key="dados", clear_on_submit=True):
         st.subheader(":green_car[Dados CNH]")  # Correção do emoji
-        nome = st.text_input(
-            ":green_car[Nome]", value=nome, placeholder="Digite seu Nome Completo"
+        name = st.text_input(
+            ":green_car[Nome]", value=name, placeholder="Digite seu Nome Completo"
         )
-        cpf = st.text_input(
+        cpf_number = st.text_input(
             ":green_car[CPF]",
-            value=cpf,
+            value=cpf_number,
             placeholder="Digite seu CPF",
             help="Exemplo: 123.456.789-10",
         )
-        rg = st.text_input(
+        rg_number = st.text_input(
             ":green_car[RG]",
-            value=rg,
+            value=rg_number,
             placeholder="Digite seu RG",
             help="Exemplo: 1234567",
         )
-        numero_validador = st.text_input(
+        validator_number = st.text_input(
             ":green_car[Número validador da CNH]",
-            value=verificador,
+            value=validator_number,
             placeholder="Digite o número validador da CNH",
             help="Números na posição vertical",
         )
-        numero_registro = st.text_input(
+        registration_number = st.text_input(
             ":green_car[Número de Registro da CNH]",
-            value=registro,
+            value=registration_number,
             placeholder="Digite o número de Registro da CNH",
             help="Número de Registro",
         )
-        org_emissor = st.text_input(
+        issuing_body = st.text_input(
             ":green_car[Órgão Emissor]",
-            value=emissor,
+            value=issuing_body,
             placeholder="Digite o órgão emissor",
             help="Exemplo: SSP",
         )
@@ -506,35 +436,35 @@ def input_update_user_cnh(
             help="Siglas do estado em que a CNH foi emitida.",
         )
         # Alternativa para exibir o calendário
-        if data_nascimento != None:
-            data_nascimento = st.text_input(
+        if birthdate != None:
+            birthdate = st.text_input(
                 ":green_car[Data de nascimento]",
-                value=data_nascimento,
+                value=birthdate,
                 placeholder="DD/MM/YYYY",
             )
 
         else:
-            data_nascimento = st.date_input(
+            birthdate = st.date_input(
                 ":green_car[Data de nascimento]", value=None, format="DD/MM/YYYY"
             )
 
         enviar_dados = st.form_submit_button("Atualizar")
         if enviar_dados:
-            if nome and validate_name(nome):
-                if numero_validador:
-                    if org_emissor:
+            if name and validate_name(name):
+                if validator_number:
+                    if issuing_body:
                         if uf and len(uf) == 2:
-                            if cpf and validate_cpf(cpf):
-                                if data_nascimento:
+                            if cpf_number and validate_cpf(cpf_number):
+                                if birthdate:
                                     dados = {
-                                        "name": nome,
-                                        "cpf_number": cpf,
-                                        "validator_number": numero_validador,
-                                        "registration_number": numero_registro,
-                                        "issuing_body": org_emissor,
+                                        "name": name,
+                                        "cpf_number": cpf_number,
+                                        "validator_number": validator_number,
+                                        "registration_number": registration_number,
+                                        "issuing_body": issuing_body,
                                         "uf": uf,
-                                        "birthdate": data_nascimento,
-                                        "rg_number": rg,
+                                        "birthdate": birthdate,
+                                        "rg_number": rg_number,
                                     }
                                     dados_json = json.dumps(dados)
                                     update_user_cnh(dados_json)
@@ -553,54 +483,54 @@ def input_update_user_cnh(
 
 
 def input_update_user_rg(
-    nome=None,
-    rg=None,
-    cpf=None,
-    data_nascimento=None,
+    name=None,
+    rg_number=None,
+    cpf_number=None,
+    birthdate=None,
 ):
     with st.form(key="dados", clear_on_submit=True):
         st.subheader(":green_car[Dados RG]")
-        nome = st.text_input(
-            ":green_car[Nome]", value=nome, placeholder="Digite seu Nome Completo"
+        name = st.text_input(
+            ":green_car[Nome]", value=name, placeholder="Digite seu Nome Completo"
         )
-        rg = st.text_input(
+        rg_number = st.text_input(
             ":green_car[RG]",
-            value=rg,
+            value=rg_number,
             placeholder="Digite seu RG",
             help="Exemplo: 1234567",
         )
 
-        cpf = st.text_input(
+        cpf_number = st.text_input(
             ":green_car[CPF]",
-            value=cpf,
+            value=cpf_number,
             placeholder="Digite seu CPF",
             help="Exemplo: 123.456.789-10",
         )
 
         # Alternativa para exibir o calendário
-        if data_nascimento != None:
-            data_nascimento = st.text_input(
+        if birthdate != None:
+            birthdate = st.text_input(
                 ":green_car[Data de nascimento]",
-                value=data_nascimento,
+                value=birthdate,
                 placeholder="DD/MM/YYYY",
             )
 
         else:
-            data_nascimento = st.date_input(
+            birthdate = st.date_input(
                 ":green_car[Data de nascimento]", value=None, format="DD/MM/YYYY"
             )
 
         enviar_dados = st.form_submit_button("Atualizar")
         if enviar_dados:
-            if nome and validate_name(nome):
-                if cpf and validate_cpf(cpf):
-                    if rg:
-                        if data_nascimento:
+            if name and validate_name(name):
+                if cpf_number and validate_cpf(cpf_number):
+                    if rg_number:
+                        if birthdate:
                             dados = {
-                                "name": nome,
-                                "cpf_number": cpf,
-                                "rg_number": rg,
-                                "birthdate": data_nascimento,
+                                "name": name,
+                                "cpf_number": cpf_number,
+                                "rg_number": rg_number,
+                                "birthdate": birthdate,
                             }
                             dados_json = json.dumps(dados)
                             update_user_rg(dados_json)
