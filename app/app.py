@@ -10,10 +10,16 @@ from Pages.Cliente.Inicio import InicioCliente
 from Pages.Adm.Administrador import InicioAdministrador
 
 
-st.set_page_config(page_title="CloudDoc", page_icon="☁️", layout='centered', initial_sidebar_state="expanded")
+st.set_page_config(
+    page_title="CloudDoc",
+    page_icon="☁️",
+    layout="centered",
+    initial_sidebar_state="expanded",
+)
 
 with open(r"app\style.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
 
 def add_logo():
     st.markdown(
@@ -37,6 +43,7 @@ def add_logo():
         """,
         unsafe_allow_html=True,
     )
+
 
 ms = st.session_state
 if "themes" not in ms:
@@ -78,6 +85,7 @@ def ChangeTheme():
         ms.themes["current_theme"] = "light"
     elif previous_theme == "light":
         ms.themes["current_theme"] = "dark"
+
 
 logo = Image.open(r"app\imagens\logoCloudDoc.png")
 new_size_logo = (100, 100)
@@ -147,9 +155,9 @@ try:
                 else:
                     st.sidebar.image(image_logo, use_column_width=False)
                     st.sidebar.subheader(f"Bem vindo {username}")
-                    st.session_state.user = username 
+                    st.session_state.user = username
                     st.session_state.id_user = search_user_id()
-                    
+
                     with st.sidebar:
                         pagina_selecionada = st.selectbox(
                             "Selecione uma página",
@@ -171,5 +179,6 @@ try:
         else:
             with info:
                 st.warning("Usuário ou senha não correspondem.")
-except:
-    st.success("Atualize a página")
+except Exception as e:
+    st.error(f"Erro: {str(e)}")
+    st.stop()
