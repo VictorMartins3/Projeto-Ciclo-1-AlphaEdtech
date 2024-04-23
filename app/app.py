@@ -2,8 +2,7 @@ import streamlit as st
 import streamlit_authenticator as stauth
 from PIL import Image
 from dependancies import sign_up
-from dependancies import fetch_users
-from dependancies import search_user_id
+from repo.users import fetch_users, search_user_id
 from Pages.Cliente.Upload import Instrucoes
 from Pages.Cliente.Carteira import MostraCarteira
 from Pages.Cliente.Inicio import InicioCliente
