@@ -47,7 +47,7 @@ def UploadCNH():
                         imagem_alinhada, ocr_results
                     )
                     for key, value in st.session_state["ocr_data"].items():
-                        st.write(f"{key}: {value}")
+                        st.write(f"{key.upper()}: {value}")
                     st.session_state["show_form"] = True
                 except Exception as e:
                     st.error(f"Erro ao processar a foto da CNH: {str(e)}")
@@ -107,7 +107,7 @@ def UploadRG():
                         imagem_alinhada, ocr_results
                     )
                     for key, value in st.session_state["ocr_data"].items():
-                        st.write(f"{key}: {value}")
+                        st.write(f"{key.upper()}: {value}")
                     st.session_state["show_form"] = True
                 except Exception as e:
                     st.error(f"Erro ao processar a foto do RG: {str(e)}")
