@@ -110,3 +110,38 @@ def update_user_rg(json_data):
 
         except (Exception, psycopg2.DatabaseError) as error:
             st.error(f"Error updating data: {error}")
+
+def delete_data(doc_type):
+    """
+    Deletes a user's document information in the database.
+
+    This function connects to a PostgreSQL database and, depending on the type of document provided,
+    deletes the user's document information in the corresponding table.
+
+    Args:
+        doc_type (str): The type of the user's document. It should be 'cnh' or 'rg'.
+
+    Returns:
+        bool: Returns True if the deletion operation was successful, False otherwise.
+    """
+    conn = connect_to_postgresql()
+    if conn:
+        try:
+            with conn:
+                with conn.cursor() as cursor:
+                    if doc_type == "cnh":
+                        cursor.execute(
+                            "DELETE FROM doc_cnh WHERE id_user = %s",
+                            (st.session_state.id_user,),
+                        )
+                    elif doc_type == "rg":
+                        cursor.execute(
+                            "DELETE FROM doc_rg WHERE id_user = %s",
+                            (st.session_state.id_user,),
+                        )
+
+                    conn.commit()
+                    return True
+        except (Exception, psycopg2.DatabaseError) as error:
+            st.error(f"Erro ao deletar dados: {error}")
+            return False

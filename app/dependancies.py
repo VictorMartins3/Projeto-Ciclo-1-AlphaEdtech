@@ -138,31 +138,6 @@ def pull_data(doc_type):
         st.error("Falha ao conectar ao banco de dados.")
         return []
 
-
-def delete_data(doc_type):
-    conn = connect_to_postgresql()
-    if conn:
-        try:
-            with conn:
-                with conn.cursor() as cursor:
-                    if doc_type == "cnh":
-                        cursor.execute(
-                            "DELETE FROM doc_cnh WHERE id_user = %s",
-                            (st.session_state.id_user,),
-                        )
-                    elif doc_type == "rg":
-                        cursor.execute(
-                            "DELETE FROM doc_rg WHERE id_user = %s",
-                            (st.session_state.id_user,),
-                        )
-
-                    conn.commit()
-                    return True
-        except (Exception, psycopg2.DatabaseError) as error:
-            st.error(f"Erro ao deletar dados: {error}")
-            return False
-
-
 # Functions app:
 def sign_up():
     with st.form(key="signup", clear_on_submit=True):
