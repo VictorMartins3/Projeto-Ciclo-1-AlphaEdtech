@@ -1,281 +1,332 @@
-import streamlit as st
-import psycopg2
+import json
+import logging
 from datetime import datetime
 import re
-import bcrypt
 import os
-from dotenv import load_dotenv
-import json
+import sys
 
-# Carregar variaveis do arquivo .env
-load_dotenv()
+import bcrypt
+import psycopg2
+import streamlit as st
+
+# Adicionando o caminho para importação dos módulos do projeto
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from config.connection import connect_to_postgresql
 
 
-def connect_to_postgresql():
-    try:
-        conn = psycopg2.connect(
-            dbname=os.getenv("DB_NAME"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("DB_PASSWORD"),
-            host=os.getenv("DB_HOST"),
-            port=os.getenv("DB_PORT"),
-        )
-        return conn
-    except (Exception, psycopg2.DatabaseError) as error:
-        st.error(f"Erro ao conectar ao banco de dados: {error}")
-        return None
-
-conn = connect_to_postgresql()
-
+# SQL queries:
 def insert_user(email, username, password):
-    try:
-        cursor = conn.cursor()
+    conn = connect_to_postgresql()
+    if conn is not None:
+        try:
+            with conn:
+                with conn.cursor() as cursor:
+                    date_joined = datetime.now()
+                    hashed_password = hash_password(password)
+                    active = True
 
-        date_joined = datetime.now()
+                    insert_query = """
+                        INSERT INTO users (username, email, password, date_joined, active)
+                        VALUES (%s, %s, %s, %s, %s)
+                    """
+                    cursor.execute(
+                        insert_query,
+                        (
+                            username,
+                            email,
+                            hashed_password.decode("utf-8"),
+                            date_joined,
+                            active,
+                        ),
+                    )
 
-        hashed_password = hash_password(password)
+                st.success("Conta criada com sucesso!")
+                st.balloons()
+        except (Exception, psycopg2.DatabaseError) as error:
+            st.error(f"Erro ao inserir usuário: {error}")
+            logging.error(f"Database operation failed: {error}")
 
-        active = False
-
-        insert_query = """
-            INSERT INTO users (username, email, password, date_joined, active)
-            VALUES (%s, %s, %s, %s, %s)
-        """
-
-        cursor.execute(
-            insert_query,
-            (username, email, hashed_password.decode("utf-8"), date_joined, active),
-        )
-
-        conn.commit()
-
-        cursor.close()
-
-        st.success("Conta criada com sucesso!")
-        st.balloons()
-    except (Exception, psycopg2.DatabaseError) as error:
-        st.error(f"Erro ao inserir usuário: {error}")
 
 def search_user_id():
-    cursor = conn.cursor()
-    cursor.execute("SELECT id_user FROM users WHERE username = %s", (st.session_state.user,))
-    user_id = cursor.fetchone()
+    conn = connect_to_postgresql()
+    if conn:
+        with conn:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "SELECT id_user FROM users WHERE username = %s",
+                    (st.session_state.user,),
+                )
+                return cursor.fetchone()
 
-    cursor.close()
-    return user_id
+
 def insert_user_cnh(json_data):
-    try:
-        if not verify_user("cnh"):
-            cursor = conn.cursor()
-
-            insert_query = """
-                INSERT INTO doc_cnh (name, cpf_number, rg_number, issuing_body, uf, birthdate, registration_number, validator_number, id_user)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """
-
-            data = json.loads(json_data)
-
-            cursor.execute(
-                insert_query,
-                (
-                    data["name"],
-                    data["cpf_number"],
-                    data["rg_number"],
-                    data["issuing_body"],
-                    data["uf"],
-                    data["birthdate"],
-                    data["registration_number"],
-                    data["validator_number"],
-                    st.session_state.id_user,
-                ),
-            )
-
-            conn.commit()
-
-            cursor.close()
-            st.success("Dados inseridos com sucesso!")
-            st.balloons()
-        else:
-            st.warning("Você já possui um documento de CNH na sua carteira.")
-    except (Exception, psycopg2.DatabaseError) as error:
-        st.error(f"Erro ao inserir dados: {error}")
+    conn = connect_to_postgresql()
+    if conn:
+        try:
+            with conn:
+                with conn.cursor() as cursor:
+                    if not verify_user("cnh"):
+                        data = json.loads(json_data)
+                        insert_query = """
+                            INSERT INTO doc_cnh (name, cpf_number, rg_number, issuing_body, uf, birthdate, registration_number, validator_number, id_user)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """
+                        cursor.execute(
+                            insert_query,
+                            (
+                                data["name"],
+                                data["cpf_number"],
+                                data["rg_number"],
+                                data["issuing_body"],
+                                data["uf"],
+                                data["birthdate"],
+                                data["registration_number"],
+                                data["validator_number"],
+                                st.session_state.id_user,
+                            ),
+                        )
+                        st.success("Dados inseridos com sucesso!")
+                        st.balloons()
+                    else:
+                        st.warning(
+                            "Você já possui um documento de CNH na sua carteira."
+                        )
+        except (Exception, psycopg2.DatabaseError) as error:
+            st.error(f"Erro ao inserir dados: {error}")
 
 
 def insert_user_rg(json_data):
-    try:
-        if not verify_user("rg"):
-            cursor = conn.cursor()
+    conn = connect_to_postgresql()
+    if conn:
+        try:
+            with conn:
+                with conn.cursor() as cursor:
+                    if not verify_user("rg"):
+                        data = json.loads(json_data)
+                        insert_query = """
+                            INSERT INTO doc_rg (name, rg_number, cpf_number, birthdate, id_user)
+                            VALUES (%s, %s, %s, %s, %s)
+                        """
+                        cursor.execute(
+                            insert_query,
+                            (
+                                data["name"],
+                                data["rg_number"],
+                                data["cpf_number"],
+                                data["birthdate"],
+                                st.session_state.id_user,
+                            ),
+                        )
+                        st.success("Dados inseridos com sucesso!")
+                        st.balloons()
+                    else:
+                        st.warning("Você já possui um documento de RG na sua carteira.")
+        except (Exception, psycopg2.DatabaseError) as error:
+            st.error(f"Erro ao inserir dados: {error}")
 
-            insert_query = """
-                INSERT INTO doc_rg (name, rg_number, cpf_number, birthdate, id_user)
-                VALUES (%s, %s, %s, %s, %s)
-            """
-
-            data = json.loads(json_data)
-
-            cursor.execute(
-                insert_query,
-                (
-                    data["name"],
-                    data["rg_number"],
-                    data["cpf_number"],
-                    data["birthdate"],
-                    st.session_state.id_user,
-                ),
-            )
-
-            conn.commit()
-
-            cursor.close()
-
-            st.success("Dados inseridos com sucesso!")
-            st.balloons()
-        else:
-            st.warning("Você já possui um documento de RG na sua carteira.")
-    except (Exception, psycopg2.DatabaseError) as error:
-        st.error(f"Erro ao inserir dados: {error}")
 
 def update_user_cnh(json_data):
-    try:
-        cursor = conn.cursor()
-        update_query = """
-            UPDATE doc_cnh
-            SET name = %s,
-                cpf_number = %s,
-                rg_number = %s,
-                issuing_body %s,
-                uf = %s,
-                birthdate = %s,
-                registration_number = %s,
-                validator_number = %s
-            WHERE id_user = %s
-        """
+    conn = connect_to_postgresql()
+    if conn:
+        try:
+            with conn:
+                with conn.cursor() as cursor:
+                    data = json.loads(json_data)
+                    update_query = """
+                        UPDATE doc_cnh
+                        SET name = %s,
+                            cpf_number = %s,
+                            rg_number = %s,
+                            issuing_body = %s,
+                            uf = %s,
+                            birthdate = %s,
+                            registration_number = %s,
+                            validator_number = %s
+                        WHERE id_user = %s
+                    """
+                    cursor.execute(
+                        update_query,
+                        (
+                            data["name"],
+                            data["cpf_number"],
+                            data["rg_number"],
+                            data["issuing_body"],
+                            data["uf"],
+                            data["birthdate"],
+                            data["registration_number"],
+                            data["validator_number"],
+                            st.session_state.id_user,
+                        ),
+                    )
+                    st.success("Dados da CNH atualizados com sucesso!")
+                    st.balloons()
+        except (Exception, psycopg2.DatabaseError) as error:
+            st.error(f"Erro ao atualizar dados: {error}")
 
-        data = json.loads(json_data)
-
-        cursor.execute(
-            update_query,
-            (
-                data["name"],
-                data["cpf_number"],
-                data["rg_number"],
-                data["issuing_body"],
-                data["uf"],
-                data["birthdate"],
-                data["registration_number"],
-                data["validator_number"],
-                st.session_state.id_user,
-            ),
-        )
-
-        conn.commit()
-
-        cursor.close()
-
-        st.success("Dados da CNH atualizados com sucesso!")
-        st.balloons()
-    except (Exception, psycopg2.DatabaseError) as error:
-        st.error(f"Erro ao atualizar dados: {error}")
 
 def update_user_rg(json_data):
-    try:
-        cursor = conn.cursor()
+    conn = connect_to_postgresql()
+    if conn:
+        try:
+            with conn:
+                with conn.cursor() as cursor:
+                    data = json.loads(json_data)
+                    update_query = """
+                        UPDATE doc_rg
+                        SET name = %s,
+                            cpf_number = %s,
+                            birthdate = %s,
+                            rg_number = %s
+                        WHERE id_user = %s
+                    """
+                    cursor.execute(
+                        update_query,
+                        (
+                            data["name"],
+                            data["cpf_number"],
+                            data["birthdate"],
+                            data["rg_number"],
+                            st.session_state.id_user,
+                        ),
+                    )
+                    st.success("Dados do RG atualizados com sucesso!")
+                    st.balloons()
+        except (Exception, psycopg2.DatabaseError) as error:
+            st.error(f"Erro ao atualizar dados: {error}")
 
-        update_query = """
-        UPDATE doc_cnh
-        SET name = %s,
-            cpf_number = %s,
-            birthdate = %s,
-            rg_number = %s
-        WHERE id_user = %s
-    """
 
-        data = json.loads(json_data)
-
-        cursor.execute(
-            update_query,
-            (
-                data["name"],
-                data["cpf_number"],
-                data["birthdate"],
-                data["rg_number"],
-                st.session_state.id_user,
-            ),
-        )
-        conn.commit()
-
-        cursor.close()
-        st.success("Dados do RG atualizados com sucesso!")
-        st.balloons()
-    except (Exception, psycopg2.DatabaseError) as error:
-        st.error(f"Erro ao atualizar dados: {error}")
 def fetch_users():
-    try:
-        cursor = conn.cursor()
+    conn = connect_to_postgresql()
+    if conn is not None:
+        try:
+            with conn:
+                with conn.cursor() as cursor:
+                    cursor.execute("SELECT email, username, password FROM users")
+                    users = cursor.fetchall()
 
-        cursor.execute("SELECT email, username, password FROM users")
-        users = cursor.fetchall()
-
-        cursor.close()
-
-        user_list = []
-        for email, username, password in users:
-            user_list.append({"key": email, "username": username, "password": password})
-
-        return user_list
-    except (Exception, psycopg2.DatabaseError) as error:
-        st.error(f"Erro ao buscar usuários: {error}")
-        return []
+                    return [
+                        {"key": email, "username": username, "password": password}
+                        for email, username, password in users
+                    ]
+        except (Exception, psycopg2.DatabaseError) as error:
+            st.error(f"Erro ao buscar usuários: {error}")
+            return []
 
 
 def get_user_emails():
-    try:
-        cursor = conn.cursor()
-
-        cursor.execute("SELECT email FROM users")
-        emails = cursor.fetchall()
-
-        cursor.close()
-
-        return [email[0] for email in emails]
-    except (Exception, psycopg2.DatabaseError) as error:
-        st.error(f"Erro ao obter emails dos usuários: {error}")
-        return []
+    conn = connect_to_postgresql()
+    if conn:
+        try:
+            with conn:
+                with conn.cursor() as cursor:
+                    cursor.execute("SELECT email FROM users")
+                    emails = cursor.fetchall()
+                    return [email[0] for email in emails]
+        except (Exception, psycopg2.DatabaseError) as error:
+            st.error(f"Erro ao obter emails dos usuários: {error}")
+            return []
 
 
 def get_usernames():
-    try:
-        cursor = conn.cursor()
+    conn = connect_to_postgresql()
+    if conn:
+        try:
+            with conn:
+                with conn.cursor() as cursor:
+                    cursor.execute("SELECT username FROM users")
+                    usernames = cursor.fetchall()
+                    return [username[0] for username in usernames]
+        except (Exception, psycopg2.DatabaseError) as error:
+            st.error(f"Erro ao obter usernames dos usuários: {error}")
+            return []
 
-        cursor.execute("SELECT username FROM users")
-        usernames = cursor.fetchall()
 
-        cursor.close()
+def verify_user(doc_type):
+    conn = connect_to_postgresql()
+    if conn:
+        try:
+            with conn:
+                with conn.cursor() as cursor:
+                    query = ""
+                    if doc_type == "cnh":
+                        query = "SELECT id_user FROM doc_cnh WHERE id_user = %s"
+                    elif doc_type == "rg":
+                        query = "SELECT id_user FROM doc_rg WHERE id_user = %s"
 
-        return [username[0] for username in usernames]
-    except (Exception, psycopg2.DatabaseError) as error:
-        st.error(f"Erro ao obter usernames dos usuários: {error}")
+                    if query:
+                        cursor.execute(query, (st.session_state.id_user))
+                        return cursor.fetchone() is not None
+        except (Exception, psycopg2.DatabaseError) as error:
+            st.error(f"Erro ao verificar usuário: {error}")
+            return False
+
+
+def pull_data(doc_type):
+    conn = (
+        connect_to_postgresql()
+    )  # Certifique-se de que esta função retorna um objeto de conexão adequado
+    data_list = []
+    if conn:
+        try:
+            with conn:
+                with conn.cursor() as cursor:
+                    # Define a query e os parâmetros com base no tipo de documento
+                    if doc_type == "cnh":
+                        sql = "SELECT name, cpf_number, rg_number, issuing_body, uf, birthdate, registration_number, validator_number FROM doc_cnh WHERE id_user = %s"
+                        params = (st.session_state.id_user,)
+                    elif doc_type == "rg":
+                        sql = "SELECT name, cpf_number, rg_number, birthdate FROM doc_rg WHERE id_user = %s"
+                        params = (st.session_state.id_user,)
+
+                    # Executa a consulta
+                    cursor.execute(sql, params)
+                    results = cursor.fetchall()
+
+                    # Processa cada linha dos resultados
+                    for row in results:
+                        data_dict = {
+                            desc[0]: value
+                            for desc, value in zip(cursor.description, row)
+                        }
+                        data_list.append(data_dict)
+
+            return data_list
+        except (Exception, psycopg2.DatabaseError) as error:
+            st.error(f"Erro ao buscar dados: {error}")
+            return []
+        finally:
+            conn.close()  # Assegura que a conexão seja fechada após a execução
+    else:
+        st.error("Falha ao conectar ao banco de dados.")
         return []
 
-def verify_user(doc):
-    cursor = conn.cursor()
 
-    if doc == "cnh":
-        cursor.execute("SELECT id_user FROM doc_cnh WHERE id_user = %s", (st.session_state.id_user,))
-        usernames = cursor.fetchall()
-        cursor.close()
-        if usernames:
-            return True
-        else:
+def delete_data(doc_type):
+    conn = connect_to_postgresql()
+    if conn:
+        try:
+            with conn:
+                with conn.cursor() as cursor:
+                    if doc_type == "cnh":
+                        cursor.execute(
+                            "DELETE FROM doc_cnh WHERE id_user = %s",
+                            (st.session_state.id_user,),
+                        )
+                    elif doc_type == "rg":
+                        cursor.execute(
+                            "DELETE FROM doc_rg WHERE id_user = %s",
+                            (st.session_state.id_user,),
+                        )
+
+                    conn.commit()
+                    return True
+        except (Exception, psycopg2.DatabaseError) as error:
+            st.error(f"Erro ao deletar dados: {error}")
             return False
-    elif doc == "rg":
-        cursor.execute("SELECT id_user FROM doc_rg WHERE id_user = %s", (st.session_state.id_user,))
-        usernames = cursor.fetchall()
-        cursor.close()
-        if usernames:
-            return True
-        else:
-            return False
+
+
+# Validations:
 def validate_email(email):
     pattern = r"^[a-zA-Z0-9-_]+@[a-zA-Z0-9]+\.[a-z]{1,3}$"
     return re.match(pattern, email)
@@ -303,31 +354,7 @@ def validate_name(nome):
             return True
     return False
 
-def pull_data(doc):
-    try:
-        cursor = conn.cursor()
-        data_list = []
-        if doc == "cnh":
-            cursor.execute("SELECT name, cpf_number, rg_number, issuing_body, uf, birthdate, registration_number, validator_number FROM doc_cnh WHERE id_user = %s", (st.session_state.id_user,))
-            data = cursor.fetchall()
 
-            for name, cpf_number, rg_number, issuing_body, uf, birthdate, registration_number, validator_number in data:
-                data_list.append({"nome": name, "cpf": cpf_number, "rg": rg_number, "emissor": issuing_body, "uf": uf, 
-                              "data_nascimento": birthdate, "registro": registration_number, "verificador": validator_number})
-        elif doc == "rg":
-            cursor.execute("SELECT name, cpf_number, rg_number, birthdate FROM doc_rg WHERE id_user = %s", (st.session_state.id_user,))
-            data = cursor.fetchall()
-
-            for name, cpf_number, rg_number, birthdate in data:
-                data_list.append({"nome": name, "cpf": cpf_number, "rg": rg_number, 
-                              "data_nascimento": birthdate})
-        cursor.close()
-
-
-        return data_list
-    except (Exception, psycopg2.DatabaseError) as error:
-        st.error(f"Erro ao buscar usuários: {error}")
-        return []
 def validate_cpf(cpf: str) -> bool:
     # Verifica a formatação do CPF
     if not re.match(r"\d{3}\.\d{3}\.\d{3}-\d{2}", cpf):
@@ -353,6 +380,7 @@ def validate_cpf(cpf: str) -> bool:
     return True
 
 
+# Functions app:
 def sign_up():
     with st.form(key="signup", clear_on_submit=True):
         st.subheader(":green[Cadastrar]")
@@ -456,11 +484,11 @@ def input_user_cnh(
 
         else:
             data_nascimento = st.text_input(
-            ":green_car[Data De nascimento]",
-            value=data_nascimento,
-            placeholder="DD/MM/YYYY",
-            help="Sua data de nascimento.",
-        )
+                ":green_car[Data De nascimento]",
+                value=data_nascimento,
+                placeholder="DD/MM/YYYY",
+                help="Sua data de nascimento.",
+            )
 
         enviar_dados = st.form_submit_button("Enviar")
         if enviar_dados:
@@ -538,11 +566,11 @@ def input_user_rg(
 
         else:
             data_nascimento = st.text_input(
-            ":green_car[Data De nascimento]",
-            value=data_nascimento,
-            placeholder="DD/MM/YYYY",
-            help="Sua data de nascimento.",
-        )   
+                ":green_car[Data De nascimento]",
+                value=data_nascimento,
+                placeholder="DD/MM/YYYY",
+                help="Sua data de nascimento.",
+            )
 
         enviar_dados = st.form_submit_button("Enviar")
         if enviar_dados:
@@ -570,6 +598,7 @@ def input_user_rg(
                     st.warning("Insira um CPF válido.")
             else:
                 st.warning("Insira um nome válido.")
+
 
 def input_update_user_cnh(
     nome=None,
@@ -654,7 +683,7 @@ def input_update_user_cnh(
                                         "birthdate": data_nascimento,
                                         "rg_number": rg,
                                     }
-                                    dados_json = json.dumps(dados)                                    
+                                    dados_json = json.dumps(dados)
                                     update_user_cnh(dados_json)
                                 else:
                                     st.warning("Insira a data de nascimento.")
@@ -668,6 +697,8 @@ def input_update_user_cnh(
                     st.warning("Número inválido.")
             else:
                 st.warning("Insira um nome válido.")
+
+
 def input_update_user_rg(
     nome=None,
     rg=None,
@@ -728,17 +759,3 @@ def input_update_user_rg(
                     st.warning("Insira um CPF válido.")
             else:
                 st.warning("Insira um nome válido.")
-
-def delete_data(doc):
-    try:
-        cursor = conn.cursor()
-        if doc == "cnh":
-            cursor.execute("DELETE FROM doc_cnh WHERE id_user = %s", (st.session_state.id_user,))
-        elif doc == "rg":
-            cursor.execute("DELETE FROM doc_rg WHERE id_user = %s", (st.session_state.id_user,))
-        conn.commit()
-        cursor.close()
-        return True
-    except (Exception, psycopg2.DatabaseError) as error:
-        st.error(f"Erro ao deletar dados: {error}")
-        return False
