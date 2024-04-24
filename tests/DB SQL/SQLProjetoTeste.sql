@@ -1,128 +1,79 @@
 BEGIN;
 
-
-CREATE TABLE IF NOT EXISTS public."Documento"
-(
-    id_doc serial,
-    tipo character varying(50),
-    usuario_id integer,
-    CONSTRAINT id_doc_pk PRIMARY KEY (id_doc)
+CREATE TABLE IF NOT EXISTS users (
+   id_user SERIAL PRIMARY KEY,
+   username VARCHAR(255),
+   email VARCHAR(255),
+   password VARCHAR(255),
+   date_joined TIMESTAMP WITH TIME ZONE,
+   active BOOL
 );
 
-CREATE TABLE IF NOT EXISTS public."Usuario"
-(
-    id_usuario serial,
-    email character varying(255),
-    senha character varying(255),
-    nome character varying(255),
-    telefone bigint,
-    endereco text,
-    sexo boolean,
-    data_criacao_conta timestamp with time zone,
-    CONSTRAINT id_usuario_pk PRIMARY KEY (id_usuario)
+CREATE TABLE IF NOT EXISTS doc_rg (
+   id_doc SERIAL PRIMARY KEY,
+   name VARCHAR(255),
+   rg_number VARCHAR(255),
+   cpf_number VARCHAR(255),
+   issuing_body VARCHAR(255),
+   issue_date DATE,
+   birth_place VARCHAR(255),
+   birthdate DATE,
+   photo BYTEA,
+   father_name VARCHAR(255),
+   mother_name VARCHAR(255),
+   signature BYTEA,
+   doc_origin VARCHAR(255),
+   observation VARCHAR(255),
+   id_user INT REFERENCES users(id_user)
 );
 
-CREATE TABLE IF NOT EXISTS public."RG"
-(
-    doc_id integer,
-    foto bytea,
-    assinatura bytea,
-    orgao_emissor character varying(255),
-    data_emissao date,
-    rg character varying(50),
-    nome character varying(255),
-    filiacao_pai character varying(255),
-    filiacao_mae character varying(255),
-    cpf character varying(20),
-    origem_doc character varying(255),
-    naturalidade character varying(50),
-    data_nasc date,
-    rh boolean,
-    observacao text,
-    dni bigint,
-    titulo_eleitor bigint,
-    zona_eleitoral integer,
-    secao_eleitoral integer,
-    nis_pis_pasep bigint,
-    cert_militar bigint,
-    cnh bigint,
-    cns bigint,
-    id_profissional character varying(255),
-    ctps integer,
-    serie_ctps integer,
-    uf_ctps character varying(2),
-    validade date,
-    CONSTRAINT doc_id_pk_rg PRIMARY KEY (doc_id)
+CREATE TABLE IF NOT EXISTS doc_cnh (
+   id_doc SERIAL PRIMARY KEY,
+   name VARCHAR(255),
+   cpf_number VARCHAR(255),
+   validator_number BIGINT,
+   registration_number BIGINT,
+   issuing_body VARCHAR(255),
+   uf VARCHAR(255),
+   rg_number VARCHAR(255),
+   birthdate DATE,
+   issue_date DATE,
+   issue_place VARCHAR(255),
+   expiration_date DATE,
+   photo BYTEA,
+   mother_name VARCHAR(255),
+   father_name VARCHAR(255),
+   id_user INT REFERENCES users(id_user)
 );
 
-CREATE TABLE IF NOT EXISTS public."CNH"
-(
-    doc_id integer,
-    nome character varying(255),
-    foto bytea,
-    observacao text,
-    data_emissao date,
-    localizacao character varying(100),
-    rg character varying(50),
-    orgao_emissor_rg character varying(255),
-    uf_rg character varying(2),
-    cpf character varying(20),
-    data_nasc date,
-    filiacao_pai character varying(255),
-    filiacao_mae character varying(255),
-    registro bigint,
-    validade date,
-    primeira_hab date,
-    cat character varying(10),
-    acc integer,
-    permissao character varying(50),
-    local_nasc character varying(50),
-    uf_nasc character varying(2),
-    nacionalidade character varying(50),
-    CONSTRAINT doc_id_pk_cnh PRIMARY KEY (doc_id)
+CREATE TABLE IF NOT EXISTS roles (
+   id_role SERIAL PRIMARY KEY,
+   role_name VARCHAR(255) NOT NULL
 );
 
-ALTER TABLE IF EXISTS public."Documento"
-    ADD CONSTRAINT usuario_id_fk FOREIGN KEY (usuario_id)
-    REFERENCES public."Usuario" (id_usuario) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
+CREATE TABLE IF NOT EXISTS user_roles (
+   id_user INT REFERENCES users(id_user),
+   id_role INT REFERENCES roles(id_role),
+   PRIMARY KEY (id_user, id_role)
+);
 
+CREATE INDEX IF NOT EXISTS idx_id_role ON roles(id_role);
+CREATE INDEX IF NOT EXISTS idx_role_name ON roles(role_name);
 
-ALTER TABLE IF EXISTS public."RG"
-    ADD CONSTRAINT doc_id_fk FOREIGN KEY (doc_id)
-    REFERENCES public."Documento" (id_doc) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
+CREATE INDEX IF NOT EXISTS idx_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_id_user ON users(id_user);
+CREATE INDEX IF NOT EXISTS idx_username ON users(username);
+CREATE INDEX IF NOT EXISTS idx_active ON users(active);
+CREATE INDEX IF NOT EXISTS idx_date_joined ON users USING BRIN (date_joied);
 
+CREATE INDEX IF NOT EXISTS idx_id_doc_rg ON doc_rg(id_doc);
+CREATE INDEX IF NOT EXISTS idx_name_rg ON doc_rg(name);
+CREATE INDEX IF NOT EXISTS idx_rg_number ON doc_rg(rg_number);
+CREATE INDEX IF NOT EXISTS idx_cpf_number_rg ON doc_rg(cpf_number);
 
-ALTER TABLE IF EXISTS public."CNH"
-    ADD CONSTRAINT doc_id_fk FOREIGN KEY (doc_id)
-    REFERENCES public."Documento" (id_doc) MATCH SIMPLE
-    ON UPDATE NO ACTION
-    ON DELETE NO ACTION
-    NOT VALID;
-
-CREATE INDEX IF NOT EXISTS idx_id_doc ON "Documento"(id_doc);
-
-CREATE INDEX IF NOT EXISTS idx_email ON "Usuario"(email);
-CREATE INDEX IF NOT EXISTS idx_id_usuario ON "Usuario"(id_usuario);
-CREATE INDEX IF NOT EXISTS idx_nome ON "Usuario"(nome);
-CREATE INDEX IF NOT EXISTS idx_data_criacao_conta ON "Usuario" USING BRIN (data_criacao_conta);
-
-CREATE INDEX IF NOT EXISTS idx_doc_id_rg ON "RG"(doc_id);
-CREATE INDEX IF NOT EXISTS idx_orgao_emissor ON "RG"(orgao_emissor);
-CREATE INDEX IF NOT EXISTS idx_rg ON "RG"(rg);
-CREATE INDEX IF NOT EXISTS idx_origem_doc ON "RG"(origem_doc);
-CREATE INDEX IF NOT EXISTS idx_data_emissao_rg ON "RG" USING BRIN (data_emissao);
-
-CREATE INDEX IF NOT EXISTS idx_doc_id_cnh ON "CNH"(doc_id);
-CREATE INDEX IF NOT EXISTS idx_data_emissao_cnh ON "CNH" USING BRIN (data_emissao);
-CREATE INDEX IF NOT EXISTS idx_registro ON "CNH"(registro);
-CREATE INDEX IF NOT EXISTS idx_validade ON "CNH" USING BRIN (validade);
-CREATE INDEX IF NOT EXISTS idx_cat ON "CNH"(cat);
-CREATE INDEX IF NOT EXISTS idx_primeira_hab ON "CNH" USING BRIN (primeira_hab);
+CREATE INDEX IF NOT EXISTS idx_id_doc_cnh ON doc_cnh(id_doc);
+CREATE INDEX IF NOT EXISTS idx_name_cnh ON doc_cnh(name);
+CREATE INDEX IF NOT EXISTS idx_cpf_number_cnh ON doc_cnh(cpf_number);
+CREATE INDEX IF NOT EXISTS idx_registration_number ON doc_cnh(registration_number);
 
 END;
