@@ -26,3 +26,4 @@ def connect_to_postgresql():
         logging.error(f"Failed to connect to the database: {error}")
         st.error(f"Error connecting to the database: {error}")
         return None
+

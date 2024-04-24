@@ -10,7 +10,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from config.connection import connect_to_postgresql
 from utils.validations import hash_password
-
+from repo.users import verify_user
 #Updates:
 def update_user_cnh(json_data):
     """
@@ -145,3 +145,96 @@ def delete_data(doc_type):
         except (Exception, psycopg2.DatabaseError) as error:
             st.error(f"Erro ao deletar dados: {error}")
             return False
+        
+#Inserts:
+def insert_user_cnh(json_data):
+    """
+    Inserts the driver's license (CNH) information for a user into the database if the user doesn't already have a CNH.
+
+    Args:
+        json_data (str): A JSON string containing the CNH information to be inserted.
+
+    Returns:
+        None
+    """
+    conn = connect_to_postgresql()
+
+    if conn:
+        try:
+            with conn:
+                with conn.cursor() as cursor:
+                    if not verify_user("cnh"):
+                        data = json.loads(json_data)
+
+                        insert_query = """
+                            INSERT INTO doc_cnh (name, cpf_number, rg_number, issuing_body, uf, birthdate, registration_number, validator_number, id_user)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """
+
+                        cursor.execute(
+                            insert_query,
+                            (
+                                data["name"],
+                                data["cpf_number"],
+                                data["rg_number"],
+                                data["issuing_body"],
+                                data["uf"],
+                                data["birthdate"],
+                                data["registration_number"],
+                                data["validator_number"],
+                                st.session_state.id_user,
+                            ),
+                        )
+
+                        st.success("Data inserted successfully!")
+
+                        st.balloons()
+                    else:
+                        st.warning(
+                            "You already have a driver's license document in your wallet."
+                        )
+        except (Exception, psycopg2.DatabaseError) as error:
+            st.error(f"Error inserting data: {error}")
+
+def insert_user_rg(json_data):
+    """
+    Inserts the identity card (RG) information for a user into the database if the user doesn't already have an RG.
+
+    Args:
+        json_data (str): A JSON string containing the RG information to be inserted.
+
+    Returns:
+        None
+    """
+    conn = connect_to_postgresql()
+
+    if conn:
+        try:
+            with conn:
+                with conn.cursor() as cursor:
+                    if not verify_user("rg"):
+                        data = json.loads(json_data)
+
+                        insert_query = """
+                            INSERT INTO doc_rg (name, rg_number, cpf_number, birthdate, id_user)
+                            VALUES (%s, %s, %s, %s, %s)
+                        """
+
+                        cursor.execute(
+                            insert_query,
+                            (
+                                data["name"],
+                                data["rg_number"],
+                                data["cpf_number"],
+                                data["birthdate"],
+                                st.session_state.id_user,
+                            ),
+                        )
+
+                        st.success("Data inserted successfully!")
+
+                        st.balloons()
+                    else:
+                        st.warning("You already have an identity card document in your wallet.")
+        except (Exception, psycopg2.DatabaseError) as error:
+            st.error(f"Error inserting data: {error}")

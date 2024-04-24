@@ -10,93 +10,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from config.connection import connect_to_postgresql
 from utils.validations import *
-from repo.users import get_user_emails, get_usernames, insert_user
-from repo.documents import update_user_cnh, update_user_rg
+from repo.users import get_user_emails, get_usernames, insert_user, verify_user
+from repo.documents import update_user_cnh, update_user_rg, insert_user_cnh, insert_user_rg
 
 # SQL queries:
-def insert_user_cnh(json_data):
-    conn = connect_to_postgresql()
-    if conn:
-        try:
-            with conn:
-                with conn.cursor() as cursor:
-                    if not verify_user("cnh"):
-                        data = json.loads(json_data)
-                        insert_query = """
-                            INSERT INTO doc_cnh (name, cpf_number, rg_number, issuing_body, uf, birthdate, registration_number, validator_number, id_user)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        """
-                        cursor.execute(
-                            insert_query,
-                            (
-                                data["name"],
-                                data["cpf_number"],
-                                data["rg_number"],
-                                data["issuing_body"],
-                                data["uf"],
-                                data["birthdate"],
-                                data["registration_number"],
-                                data["validator_number"],
-                                st.session_state.id_user,
-                            ),
-                        )
-                        st.success("Dados inseridos com sucesso!")
-                        st.balloons()
-                    else:
-                        st.warning(
-                            "Você já possui um documento de CNH na sua carteira."
-                        )
-        except (Exception, psycopg2.DatabaseError) as error:
-            st.error(f"Erro ao inserir dados: {error}")
-
-
-def insert_user_rg(json_data):
-    conn = connect_to_postgresql()
-    if conn:
-        try:
-            with conn:
-                with conn.cursor() as cursor:
-                    if not verify_user("rg"):
-                        data = json.loads(json_data)
-                        insert_query = """
-                            INSERT INTO doc_rg (name, rg_number, cpf_number, birthdate, id_user)
-                            VALUES (%s, %s, %s, %s, %s)
-                        """
-                        cursor.execute(
-                            insert_query,
-                            (
-                                data["name"],
-                                data["rg_number"],
-                                data["cpf_number"],
-                                data["birthdate"],
-                                st.session_state.id_user,
-                            ),
-                        )
-                        st.success("Dados inseridos com sucesso!")
-                        st.balloons()
-                    else:
-                        st.warning("Você já possui um documento de RG na sua carteira.")
-        except (Exception, psycopg2.DatabaseError) as error:
-            st.error(f"Erro ao inserir dados: {error}")
-
-def verify_user(doc_type):
-    conn = connect_to_postgresql()
-    if conn:
-        try:
-            with conn:
-                with conn.cursor() as cursor:
-                    query = ""
-                    if doc_type == "cnh":
-                        query = "SELECT id_user FROM doc_cnh WHERE id_user = %s"
-                    elif doc_type == "rg":
-                        query = "SELECT id_user FROM doc_rg WHERE id_user = %s"
-
-                    if query:
-                        cursor.execute(query, (st.session_state.id_user))
-                        return cursor.fetchone() is not None
-        except (Exception, psycopg2.DatabaseError) as error:
-            st.error(f"Erro ao verificar usuário: {error}")
-            return False
 
 
 def pull_data(doc_type):
