@@ -98,3 +98,22 @@ def get_usernames():
         except (Exception, psycopg2.DatabaseError) as error:
             st.error(f"Erro ao obter usernames dos usuários: {error}")
             return []
+        
+def verify_user(doc_type):
+    conn = connect_to_postgresql()
+    if conn:
+        try:
+            with conn:
+                with conn.cursor() as cursor:
+                    query = ""
+                    if doc_type == "cnh":
+                        query = "SELECT id_user FROM doc_cnh WHERE id_user = %s"
+                    elif doc_type == "rg":
+                        query = "SELECT id_user FROM doc_rg WHERE id_user = %s"
+
+                    if query:
+                        cursor.execute(query, (st.session_state.id_user))
+                        return cursor.fetchone() is not None
+        except (Exception, psycopg2.DatabaseError) as error:
+            st.error(f"Erro ao verificar usuário: {error}")
+            return False
