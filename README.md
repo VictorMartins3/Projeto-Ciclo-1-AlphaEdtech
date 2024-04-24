@@ -1,3 +1,5 @@
-<h1>CoudDoc: sua carteira virtual</h1>
+<p align = "center">
+  <img src = "docs/logo.jpeg" width = "200">
+</p>
 
-<img src = "docs/logo.jpeg" width = "100" style = "float: right;">
+<h1>CoudDoc: sua carteira virtual</h1>
