@@ -4,22 +4,20 @@
   <img alt = "Repository size" src="https://img.shields.io/github/repo-size/VictorMartins3/Projeto-Ciclo-1-AlphaEdtech">
   
   <img alt = "GitHub last commit" src="https://img.shields.io/github/last-commit/VictorMartins3/Projeto-Ciclo-1-AlphaEdtech">
-    
-  <img alt = "License" src="https://img.shields.io/badge/license-MIT-brightgreen">
-   
-  <img alt = "Stargazers" src="https://img.shields.io/github/stars/VictorMartins3/Projeto-Ciclo-1-AlphaEdtech?style=social">
   
-  <img alt = "Status" src="https://img.shields.io/static/v1?label=Status&message=Em Acabamento&color=FFFF00&style=plastic"/>
-
-  <img alt = "Top language" src="https://img.shields.io/github/languages/top/VictorMartins3/Projeto-Ciclo-1-AlphaEdtech?style=social">
+  <img alt = "Status" src="https://img.shields.io/static/v1?label=Status&message=Em Acabamento&color=FFFF00&style=flat"/>
 
   <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/VictorMartins3/Projeto-Ciclo-1-AlphaEdtech">
 
   <img alt="GitHub repo file or directory count" src="https://img.shields.io/github/directory-file-count/VictorMartins3/Projeto-Ciclo-1-AlphaEdtech">
 
+  <img alt = "Top language" src="https://img.shields.io/github/languages/top/VictorMartins3/Projeto-Ciclo-1-AlphaEdtech?style=social">
+
   <img alt="GitHub watchers" src="https://img.shields.io/github/watchers/VictorMartins3/Projeto-Ciclo-1-AlphaEdtech">
 
   <img alt="GitHub forks" src="https://img.shields.io/github/forks/VictorMartins3/Projeto-Ciclo-1-AlphaEdtech">
+
+  <img alt = "Stargazers" src="https://img.shields.io/github/stars/VictorMartins3/Projeto-Ciclo-1-AlphaEdtech?style=social">
 
 </p>
 
@@ -30,9 +28,10 @@
 <p align="center">
  <a href="#clouddoc-sua-carteira-virtual">Objetivo</a> •
  <a href="#features">Features</a> • 
+ <a href="#layout">Layout</a> • 
+ <a href="#demonstracao">Demonstração</a> •
+ <a href="#executando">Executando</a> • 
  <a href="#tecnologias">Tecnologias</a> • 
- <a href="#contribuicao">Contribuição</a> • 
- <a href="#licenc-a">Licença</a> • 
  <a href="#autores">Autores</a>
 </p>
 
