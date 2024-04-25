@@ -42,7 +42,7 @@
                     de maneira prática e rápida.
 </p>
 
-### Features
+## Features
 
 - [x] Cadastro de usuário
 - [x] Login
@@ -53,7 +53,14 @@
 - [x] Atualização de documento
 - [x] Modo claro/escuro
 
-### Autores
+## Layout
+
+<p align = "center">
+
+  [<img loading="lazy" src="https://avatars.githubusercontent.com/u/105059460?v=4" width=115><br><sub>Cleverson Guandalin</sub>](https://github.com/CleverGnd)
+</p>
+
+## Autores
 
 | [<img loading="lazy" src="https://avatars.githubusercontent.com/u/105059460?v=4" width=115><br><sub>Cleverson Guandalin</sub>](https://github.com/CleverGnd) |  [<img loading="lazy" src="https://avatars.githubusercontent.com/u/149073167?v=4" width=115><br><sub>Gabriel Freire</sub>](https://github.com/gabrielfreire94) |  [<img loading="lazy" src="https://avatars.githubusercontent.com/u/128195807?v=4" width=115><br><sub>Luan Oliveira</sub>](https://github.com/LuanOliveira13) |  [<img loading="lazy" src="https://avatars.githubusercontent.com/u/144630236?s=400&u=7d7e40d80d8d466f5478a8ac9f390af04f909718&v=4" width=115><br><sub>Renan Pinto</sub>](https://github.com/RenanRCPinto) |  [<img loading="lazy" src="https://avatars.githubusercontent.com/u/106573420?v=4" width=115><br><sub>Victor Martins</sub>](https://github.com/VictorMartins3) |
 | :---: | :---: | :---: | :---: | :---: |
