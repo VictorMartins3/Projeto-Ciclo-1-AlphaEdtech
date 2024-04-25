@@ -84,16 +84,13 @@
 
 ## Demonstração
 
-### Leitura CNH
+### Leitura
 
 ![](app/gifs/GifCNH.gif)
 
-### Leitura RG
+### Carteira
 
-
-### Minha carteira
-
-
+![](app/gifs/GifCarteiraDelete.gif)
 
 ## Executando
 
