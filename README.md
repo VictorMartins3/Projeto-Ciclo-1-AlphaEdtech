@@ -82,6 +82,21 @@
   <img loading="lazy" src="app/imagens/carteira.PNG" width="1000">
 </p>
 
+## Executando
+
+- Para conseguir executar o CloudDoc primeiramente você deve colocar este repositório em seu computador.
+- Será necessária também a instalação do Poetry.
+- Em seguida use o código SQL do arquivo "SQLProjeto.sql" para criar o seu banco de dados PostgreSQL.
+- Depois é necessário que crie na pasta do projeto um arquivo de texto nomeado ".env" como demonstrado no arquivo "example.env" com as informações do banco de dados que você criou.
+- Então abra o terminal na pasta do projeto e execute os seguintes comandos:
+  poetry shell
+  poetry install
+  streamlit run <caminho do arquivo "app.py">
+
+## Tecnologias
+
+Toda tecnologia utilizada no CloudDoc está listada no arquivo "pyproject.toml".
+
 ## Autores
 
 | [<img loading="lazy" src="https://avatars.githubusercontent.com/u/105059460?v=4" width=115><br><sub>Cleverson Guandalin</sub>](https://github.com/CleverGnd) |  [<img loading="lazy" src="https://avatars.githubusercontent.com/u/149073167?v=4" width=115><br><sub>Gabriel Freire</sub>](https://github.com/gabrielfreire94) |  [<img loading="lazy" src="https://avatars.githubusercontent.com/u/128195807?v=4" width=115><br><sub>Luan Oliveira</sub>](https://github.com/LuanOliveira13) |  [<img loading="lazy" src="https://avatars.githubusercontent.com/u/144630236?s=400&u=7d7e40d80d8d466f5478a8ac9f390af04f909718&v=4" width=115><br><sub>Renan Pinto</sub>](https://github.com/RenanRCPinto) |  [<img loading="lazy" src="https://avatars.githubusercontent.com/u/106573420?v=4" width=115><br><sub>Victor Martins</sub>](https://github.com/VictorMartins3) |
