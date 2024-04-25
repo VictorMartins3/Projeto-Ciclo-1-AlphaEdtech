@@ -238,3 +238,51 @@ def insert_user_rg(json_data):
                         st.warning("You already have an identity card document in your wallet.")
         except (Exception, psycopg2.DatabaseError) as error:
             st.error(f"Error inserting data: {error}")
+def pull_data(doc_type):
+    """
+    Retrieves document data from the database based on the document type.
+
+    Args:
+        doc_type (str): Type of document to pull data for (e.g., "cnh" for driver's license, "rg" for identity card).
+
+    Returns:
+        list: A list of dictionaries containing the retrieved data.
+    """
+    conn = connect_to_postgresql()
+    
+    data_list = []
+    
+    if conn:
+        try:
+            with conn:
+                with conn.cursor() as cursor:
+                    if doc_type == "cnh":
+                        sql = "SELECT name, cpf_number, rg_number, issuing_body, uf, birthdate, registration_number, validator_number FROM doc_cnh WHERE id_user = %s"
+                        params = (st.session_state.id_user,)
+                    elif doc_type == "rg":
+                        sql = "SELECT name, cpf_number, rg_number, birthdate FROM doc_rg WHERE id_user = %s"
+                        params = (st.session_state.id_user,)
+                    
+                    cursor.execute(sql, params)
+                    
+                    results = cursor.fetchall()
+                    
+                    for row in results:
+                        data_dict = {
+                            desc[0]: value
+                            for desc, value in zip(cursor.description, row)
+                        }
+                        data_list.append(data_dict)
+            
+            return data_list
+        
+        except (Exception, psycopg2.DatabaseError) as error:
+            st.error(f"Error fetching data: {error}")
+            return []
+        
+        finally:
+            conn.close()
+    
+    else:
+        st.error("Failed to connect to the database.")
+        return []
