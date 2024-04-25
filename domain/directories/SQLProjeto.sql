@@ -64,7 +64,7 @@ CREATE INDEX IF NOT EXISTS idx_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_id_user ON users(id_user);
 CREATE INDEX IF NOT EXISTS idx_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_active ON users(active);
-CREATE INDEX IF NOT EXISTS idx_date_joined ON users USING BRIN (date_joied);
+CREATE INDEX IF NOT EXISTS idx_date_joined ON users USING BRIN (date_joined);
 
 CREATE INDEX IF NOT EXISTS idx_id_doc_rg ON doc_rg(id_doc);
 CREATE INDEX IF NOT EXISTS idx_name_rg ON doc_rg(name);
