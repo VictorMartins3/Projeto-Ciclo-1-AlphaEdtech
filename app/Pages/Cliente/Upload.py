@@ -5,7 +5,7 @@ from dependancies import input_user_cnh
 from dependancies import input_user_rg
 from repo.users import verify_user
 from dependancies import input_update_user_cnh, input_update_user_rg
-from dependancies import pull_data
+from repo.documents import pull_data
 import sys
 import numpy as np
 

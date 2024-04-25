@@ -1,5 +1,6 @@
 ﻿import streamlit as st
-from dependancies import verify_user, pull_data
+from dependancies import verify_user
+from repo.documents import pull_data
 from repo.documents import delete_data
 
 

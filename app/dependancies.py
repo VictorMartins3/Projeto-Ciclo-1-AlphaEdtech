@@ -16,45 +16,6 @@ from repo.documents import update_user_cnh, update_user_rg, insert_user_cnh, ins
 # SQL queries:
 
 
-def pull_data(doc_type):
-    conn = (
-        connect_to_postgresql()
-    )  # Certifique-se de que esta função retorna um objeto de conexão adequado
-    data_list = []
-    if conn:
-        try:
-            with conn:
-                with conn.cursor() as cursor:
-                    # Define a query e os parâmetros com base no tipo de documento
-                    if doc_type == "cnh":
-                        sql = "SELECT name, cpf_number, rg_number, issuing_body, uf, birthdate, registration_number, validator_number FROM doc_cnh WHERE id_user = %s"
-                        params = (st.session_state.id_user,)
-                    elif doc_type == "rg":
-                        sql = "SELECT name, cpf_number, rg_number, birthdate FROM doc_rg WHERE id_user = %s"
-                        params = (st.session_state.id_user,)
-
-                    # Executa a consulta
-                    cursor.execute(sql, params)
-                    results = cursor.fetchall()
-
-                    # Processa cada linha dos resultados
-                    for row in results:
-                        data_dict = {
-                            desc[0]: value
-                            for desc, value in zip(cursor.description, row)
-                        }
-                        data_list.append(data_dict)
-
-            return data_list
-        except (Exception, psycopg2.DatabaseError) as error:
-            st.error(f"Erro ao buscar dados: {error}")
-            return []
-        finally:
-            conn.close()  # Assegura que a conexão seja fechada após a execução
-    else:
-        st.error("Falha ao conectar ao banco de dados.")
-        return []
-
 # Functions app:
 def sign_up():
     with st.form(key="signup", clear_on_submit=True):
