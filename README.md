@@ -55,9 +55,31 @@
 
 ## Layout
 
+### Tela de Login
 <p align = "center">
+  <img loading="lazy" src="app/imagens/login.PNG" width="1000">
+</p>
 
-  [<img loading="lazy" src="https://avatars.githubusercontent.com/u/105059460?v=4" width=115><br><sub>Cleverson Guandalin</sub>](https://github.com/CleverGnd)
+### Tela de Cadastro
+<p align = "center">
+  <img loading="lazy" src="app/imagens/cadastro.PNG" width="1000">
+</p>
+
+### Tela de Início
+<p align = "center">
+  <img loading="lazy" src="app/imagens/inicio.PNG" width="1000">
+</p>
+
+### Tela de Upload
+<p align = "center">
+  <img loading="lazy" src="app/imagens/upload.PNG" width="1000">
+
+  <img loading="lazy" src="app/imagens/upload2.PNG" width="1000">
+</p>
+
+### Tela da Carteira
+<p align = "center">
+  <img loading="lazy" src="app/imagens/carteira.PNG" width="1000">
 </p>
 
 ## Autores
