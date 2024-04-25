@@ -86,6 +86,7 @@
 
 ### Leitura CNH
 
+![](app/gifs/GifCNH.gif)
 
 ### Leitura RG
 
