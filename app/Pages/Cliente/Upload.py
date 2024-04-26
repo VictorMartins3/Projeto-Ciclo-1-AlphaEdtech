@@ -51,7 +51,8 @@ def UploadCNH():
                         st.write(f"{key.upper()}: {value}")
                     st.session_state["show_form"] = True
                 except Exception as e:
-                    # st.error(f"Erro ao processar a foto da CNH: {str(e)}") Apresenta erro ao usuário
+                    # Return error message if the CNH detection fails
+                    # st.error(f"Erro ao processar a foto da CNH: {str(e)}")
                     st.error(
                         f"Erro ao processar a foto da CNH. Por favor, verifique novamente as instruções e tente novamente."
                     )
@@ -114,7 +115,11 @@ def UploadRG():
                         st.write(f"{key.upper()}: {value}")
                     st.session_state["show_form"] = True
                 except Exception as e:
-                    st.error(f"Erro ao processar a foto do RG: {str(e)}")
+                    # Return error message if the RG detection fails
+                    # st.error(f"Erro ao processar a foto do RG: {str(e)}")
+                    st.error(
+                        f"Erro ao processar a foto do RG. Por favor, verifique novamente as instruções e tente novamente."
+                    )
                     st.session_state["show_form"] = False
             else:
                 st.error(
