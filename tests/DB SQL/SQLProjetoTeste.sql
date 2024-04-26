@@ -2,18 +2,18 @@ BEGIN;
 
 CREATE TABLE IF NOT EXISTS users (
    id_user SERIAL PRIMARY KEY,
-   username VARCHAR(255) NOT NULL,
-   email VARCHAR(255) NOT NULL,
-   password VARCHAR(255) NOT NULL,
-   date_joined TIMESTAMP WITH TIME ZONE NOT NULL,
-   active BOOL NOT NULL
+   username VARCHAR(255),
+   email VARCHAR(255),
+   password VARCHAR(255),
+   date_joined TIMESTAMP WITH TIME ZONE,
+   active BOOL
 );
 
 CREATE TABLE IF NOT EXISTS doc_rg (
    id_doc SERIAL PRIMARY KEY,
-   name VARCHAR(255) NOT NULL,
-   rg_number VARCHAR(255) NOT NULL,
-   cpf_number VARCHAR(255) NOT NULL,
+   name VARCHAR(255),
+   rg_number VARCHAR(255),
+   cpf_number VARCHAR(255),
    issuing_body VARCHAR(255),
    issue_date DATE,
    birth_place VARCHAR(255),
@@ -29,10 +29,10 @@ CREATE TABLE IF NOT EXISTS doc_rg (
 
 CREATE TABLE IF NOT EXISTS doc_cnh (
    id_doc SERIAL PRIMARY KEY,
-   name VARCHAR(255) NOT NULL,
-   cpf_number VARCHAR(255) NOT NULL,
-   validator_number BIGINT NOT NULL,
-   registration_number BIGINT NOT NULL,
+   name VARCHAR(255),
+   cpf_number VARCHAR(255),
+   validator_number BIGINT,
+   registration_number BIGINT,
    issuing_body VARCHAR(255),
    uf VARCHAR(255),
    rg_number VARCHAR(255),

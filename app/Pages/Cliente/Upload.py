@@ -3,9 +3,9 @@ import os
 from PIL import Image
 from dependancies import input_user_cnh
 from dependancies import input_user_rg
-from dependancies import verify_user
+from repo.users import verify_user
 from dependancies import input_update_user_cnh, input_update_user_rg
-from dependancies import pull_data
+from repo.documents import pull_data
 import sys
 import numpy as np
 
@@ -18,6 +18,7 @@ from services.preprocessing import preprocess
 from services.ocr_service import ocr
 from services.cnh_detection import cnh_detection
 from services.rg_detection import rg_detection
+
 
 def UploadCNH():
     if "form_submitted" not in st.session_state:
@@ -47,10 +48,13 @@ def UploadCNH():
                         imagem_alinhada, ocr_results
                     )
                     for key, value in st.session_state["ocr_data"].items():
-                        st.write(f"{key}: {value}")
+                        st.write(f"{key.upper()}: {value}")
                     st.session_state["show_form"] = True
                 except Exception as e:
-                    st.error(f"Erro ao processar a foto da CNH: {str(e)}")
+                    # st.error(f"Erro ao processar a foto da CNH: {str(e)}") Apresenta erro ao usuário
+                    st.error(
+                        f"Erro ao processar a foto da CNH. Por favor, verifique novamente as instruções e tente novamente."
+                    )
                     st.session_state["show_form"] = False
             else:
                 st.error(
@@ -107,7 +111,7 @@ def UploadRG():
                         imagem_alinhada, ocr_results
                     )
                     for key, value in st.session_state["ocr_data"].items():
-                        st.write(f"{key}: {value}")
+                        st.write(f"{key.upper()}: {value}")
                     st.session_state["show_form"] = True
                 except Exception as e:
                     st.error(f"Erro ao processar a foto do RG: {str(e)}")
@@ -218,4 +222,3 @@ def Instrucoes():
         st.session_state.upload_mode = None
     if st.session_state.selected_document == "Escolha":
         st.session_state.update_data = None
-

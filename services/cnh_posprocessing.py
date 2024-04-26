@@ -1,7 +1,8 @@
 from services.ocr_service import ocr
+from services.rg_posprocessing import format_cpf
 import re
 
-def verificar_versao_cnh(results):
+def check_cnh_version(results):
     keywords = [
         "driver",
         "driving",
@@ -15,9 +16,9 @@ def verificar_versao_cnh(results):
         "4c",
         "4d",
     ]
-    textos = [texto for _, texto, _ in results]
+    texts = [text for _, text, _ in results]
     for keyword in keywords:
-        if any(keyword in palavra.lower() for palavra in textos):
+        if any(keyword in word.lower() for word in texts):
             return "new"
     return "old"
 
@@ -25,105 +26,160 @@ def verificar_versao_cnh(results):
 def cnh_keypoints(version):
     if version == "new":
         key_points = {
-            'nome': (210, 230),
+            'name': (210, 230),
             'rg': (510, 410),
             'cpf': (520, 470),
-            'nascimento': (510, 290),
-            'numero': (0, 104),
-            'registro': (740, 470),
-            }
+            'birth': (510, 290),
+            'number': (0, 104),
+            'registration': (740, 470),
+        }
     else:
         key_points = {
-            'nome': (200, 200),
+            'name': (200, 200),
             'rg': (550, 280),
             'cpf': (550, 380),
-            'nascimento': (880, 380),
-            'numero': (0, 104),
-            'registro': (230, 750),
-            }
+            'birth': (880, 380),
+            'number': (0, 104),
+            'registration': (230, 750),
+        }
     return key_points
 
 
-def valida_nome_cnh(imagem, top_left, w, h, texto):
-    # Divide a string pelos espaços em branco
-    partes = texto.strip().split()
-    # Conta o número de palavras na string
-    quantidade_nomes = len(partes)
-    # Verifica se tem mais de um nome
-    if quantidade_nomes > 2:
-        return texto  # teoricamente pegou o nome completo
-    elif quantidade_nomes == 2:
-        nova_roi = imagem[
+def validate_cnh_name(image, top_left, w, h, text):
+    """
+    Validate the extracted name from CNH.
+
+    Args:
+        image: Aligned document image after preprocessing.
+        top_left: Top-left corner coordinates of the extracted name region.
+        w: Width of the extracted name region.
+        h: Height of the extracted name region.
+        text: Extracted text containing the name.
+
+    Returns:
+        validated_name: Validated and formatted name string.
+    """
+    # Split the string by whitespaces
+    parts = text.strip().split()
+    # Count the number of words in the string
+    num_names = len(parts)
+    # Check if there is more than one name
+    if num_names > 2:
+        return text.upper()
+    elif num_names == 2:
+        new_roi = image[
             top_left[1] - 10 : top_left[1] + h + 10, top_left[0] : top_left[0] + 3 * w
         ]
     else:
-        nova_roi = imagem[
+        new_roi = image[
             top_left[1] - 10 : top_left[1] + h + 10, top_left[0] : top_left[0] + 5 * w
         ]
-    resultado_nome = ocr(nova_roi)
-    nome_completo = " ".join(
-        [nome for _, nome, _ in resultado_nome]
+    name_result = ocr(new_roi)
+    full_name = " ".join(
+        [name for _, name, _ in name_result]
     )
-    return nome_completo
+    return full_name.upper()
 
 
-def valida_rg_cnh(imagem, top_left, w, h, texto):
-    if texto[-1].isalpha():
+def validate_cnh_rg(image, top_left, w, h, text):
+    """
+    Validate the extracted RG and issuer from CNH.
+
+    Args:
+        image: Aligned document image after preprocessing.
+        top_left: Top-left corner coordinates of the extracted RG region.
+        w: Width of the extracted RG region.
+        h: Height of the extracted RG region.
+        text: Extracted text containing the RG and issuer information.
+
+    Returns:
+        rg: Validated RG number string.
+        issuer: Issuer information string.
+        state: State abbreviation string.
+    """
+    if text[-1].isalpha():
         pass
     else:
-        nova_roi = imagem[
+        new_roi = image[
             top_left[1] : top_left[1] + h + 10, top_left[0] : top_left[0] + 460
         ]
-        resultado_rg = ocr(nova_roi)
-        texto = " ".join(
-            [caracter for _, caracter, confianca in resultado_rg if confianca > 0.3]
+        rg_result = ocr(new_roi)
+        text = " ".join(
+            [character for _, character, confidence in rg_result if confidence > 0.3]
         )
-    rg = re.findall(r'\d+', texto)
+    rg = re.findall(r'\d+', text)
     rg = ''.join(rg)
-    orgao_uf = re.findall(r'[a-zA-Z]+', texto)
-    if len(orgao_uf) == 1:
-        emissor, uf = orgao_uf[0][:-2], orgao_uf[0][-2:]
+    issuer_state = re.findall(r'[a-zA-Z]+', text)
+    if len(issuer_state) == 1:
+        issuer, state = issuer_state[0][:-2], issuer_state[0][-2:]
     else:
-        emissor, uf = orgao_uf[0], orgao_uf[1]
-    return rg, emissor, uf
+        issuer, state = issuer_state[0], issuer_state[1]
+    return rg, issuer, state
 
 
-def valida_cpf_cnh(imagem, top_left, w, h, n_cpf):
-    tamanho = len("".join(char for char in n_cpf if char.isdigit()))
-    if tamanho == 11:
-        return n_cpf.replace(" ", "").replace(",", ".")  # teoricamente pegou o cpf completo
+def validate_cnh_cpf(image, top_left, w, h, cpf_number):
+    """
+    Validate the extracted CPF from CNH.
+
+    Args:
+        image: Aligned document image after preprocessing.
+        top_left: Top-left corner coordinates of the extracted CPF region.
+        w: Width of the extracted CPF region.
+        h: Height of the extracted CPF region.
+        cpf_number: Extracted CPF number.
+
+    Returns:
+        validated_cpf: Validated and formatted CPF string.
+    """
+    size = len("".join(char for char in cpf_number if char.isdigit()))
+    if size == 11:
+        return format_cpf(cpf_number)
     else:
-        nova_roi = imagem[
+        new_roi = image[
             top_left[1] - 10 : top_left[1] + h + 10, top_left[0] : top_left[0] + 270
         ]
-        resultado_cpf = ocr(nova_roi)
-        cpf_completo = ".".join(
-            [digito for _, digito, confianca in resultado_cpf if confianca > 0.3]
+        cpf_result = ocr(new_roi)
+        full_cpf = ".".join(
+            [digit for _, digit, confidence in cpf_result if confidence > 0.3]
         )
-        return cpf_completo.replace(" ", "").replace(",", ".")
+        return format_cpf(full_cpf) if len(full_cpf) >= 11 else full_cpf
 
-def valida_data_cnh(imagem, top_left, w, h, data):
+
+def validate_cnh_birth_date(image, top_left, w, h, date):
+    """
+    Validate the extracted birth date from CNH.
+
+    Args:
+        image: Aligned document image after preprocessing.
+        top_left: Top-left corner coordinates of the extracted birth date region.
+        w: Width of the extracted birth date region.
+        h: Height of the extracted birth date region.
+        date: Extracted birth date string.
+
+    Returns:
+        validated_date: Validated and formatted birth date string.
+    """
     pattern = r'^\d{2}/\d{2}/\d{4}$'
     
-    if re.match(pattern, data):
-        return data
+    if re.match(pattern, date):
+        return date
     else:
-        partes = data.strip().split()
-        quantidade = len(partes)
+        parts = date.strip().split()
+        quantity = len(parts)
     
-    if quantidade > 1:
-        if re.match(pattern, partes[0]):
-            return partes[0]
-        elif re.match(pattern, partes[-1]):
-            return partes[-1]
+    if quantity > 1:
+        if re.match(pattern, parts[0]):
+            return parts[0]
+        elif re.match(pattern, parts[-1]):
+            return parts[-1]
     else:
-        nova_roi = imagem[
-            top_left[1] - 10 : top_left[1] + h + 10, top_left[0] : 
+        new_roi = image[
+            top_left[1] - 10 : top_left[1] + h + 10, top_left[0] :
         ]
-        resultado_data = ocr(nova_roi)
-        data = "".join([caracter for _, caracter, confianca in resultado_data if confianca > 0.3])
-        data = re.sub(r'[^0-9\/]', '', data)
-        if len(data) > 10:
-            return data[len(data)-10:]
+        date_result = ocr(new_roi)
+        date = "".join([character for _, character, confidence in date_result if confidence > 0.3])
+        date = re.sub(r'[^0-9\/]', '', date)
+        if len(date) > 10:
+            return date[len(date)-10:]
         else:
-            return data
+            return date
